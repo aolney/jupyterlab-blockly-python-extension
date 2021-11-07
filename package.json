@@ -1,12 +1,13 @@
 {
   "name": "@aolney/fable-jupyterlab-blockly-extension",
   "version": "0.4.2",
-  "description": "An JupyterLab extension for Blockly with Fable tooling",
+  "description": "An JupyterLab extension for Blockly and the Python language",
   "keywords": [
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension",
-    "blockly"
+    "blockly",
+    "Python"
   ],
   "homepage": "https://github.com/aolney/fable-jupyterlab-blockly-extension",
   "bugs": {
