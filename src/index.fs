@@ -330,7 +330,7 @@ let createMainAreaWidget( bw:BlocklyWidget)=
       JupyterlabApputils.Types.MainAreaWidget.Create
           (createObj [ "content" ==> bw ])
   w.id <- "blockly-jupyterlab-python"
-  w.title.label <- "Blockly Palette"
+  w.title.label <- "Blockly Python"
   w.title.closable <- true
   //
   w
