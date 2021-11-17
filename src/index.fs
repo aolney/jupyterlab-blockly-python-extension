@@ -79,7 +79,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                  (fun _ ->
                      let win =
                          Browser.Dom.window.``open``
-                             ("https://github.com/aolney/fable-jupyterlab-blockly-extension/issues", "_blank")
+                             ("https://github.com/aolney/jupyterlab-blockly-python-extension/issues", "_blank")
                      win.focus()
                      ()))
             buttonDiv.appendChild( bugReportButton) |> ignore

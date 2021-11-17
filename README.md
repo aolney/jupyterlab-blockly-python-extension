@@ -1,6 +1,8 @@
-# fable-jupyterlab-blockly-extension
+# jupyterlab-blockly-python-extension
 
-A [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) extension implementing a Blockly palette with [Fable](https://fable.io/) tooling.
+A [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) extension implementing a Blockly palette for the Python language using [Fable](https://fable.io/) tooling.
+
+**This extension supercedes [the original](https://github.com/aolney/fable-jupyterlab-blockly-extension) by allowing multiple such extensions (e.g. the [R extension](https://github.com/aolney/jupyterlab-blockly-r-extension) to coexist in parallel.**
 
 The following query string parameters enable functionality:
 
@@ -14,13 +16,13 @@ The following query string parameters enable functionality:
 ## Installation
 
 ```bash
-jupyter labextension install @aolney/fable-jupyterlab-blockly-extension
+jupyter labextension install @aolney/jupyterlab-blockly-python-extension
 ```
 
 ## Updating to latest version
 
 ```bash
-jupyter labextension update @aolney/fable-jupyterlab-blockly-extension
+jupyter labextension update @aolney/jupyterlab-blockly-python-extension
 ```
 
 ## Development
