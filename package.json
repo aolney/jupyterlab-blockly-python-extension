@@ -1,16 +1,17 @@
 {
-  "name": "@aolney/fable-jupyterlab-blockly-extension",
-  "version": "0.4.2",
-  "description": "An JupyterLab extension for Blockly with Fable tooling",
+  "name": "@aolney/jupyterlab-blockly-python-extension",
+  "version": "0.5.0",
+  "description": "An JupyterLab extension for Blockly and the Python language",
   "keywords": [
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension",
-    "blockly"
+    "blockly",
+    "Python"
   ],
-  "homepage": "https://github.com/aolney/fable-jupyterlab-blockly-extension",
+  "homepage": "https://github.com/aolney/jupyterlab-blockly-python-extension",
   "bugs": {
-    "url": "https://github.com/aolney/fable-jupyterlab-blockly-extension/issues"
+    "url": "https://github.com/aolney/jupyterlab-blockly-python-extension/issues"
   },
   "license": "Apache-2.0",
   "author": "Andrew M. Olney",
@@ -22,7 +23,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aolney/fable-jupyterlab-blockly-extension.git"
+    "url": "https://github.com/aolney/jupyterlab-blockly-python-extension.git"
   },
   "scripts": {
     "build": "fable-splitter src -o lib",

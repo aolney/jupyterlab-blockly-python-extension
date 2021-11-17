@@ -1,0 +1,12 @@
+name: blockly-extensions
+channels:
+  - conda-forge
+  - plotly
+  - defaults
+dependencies:
+  - python=3.7
+  - xeus-python
+  - jupyterlab=1.2.6
+  - pip
+  - pandas
+  - plotly

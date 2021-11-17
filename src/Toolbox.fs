@@ -906,9 +906,9 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
         varName + (if hasDot then "." else "" ) + memberName
     [| code; blockly?Python?ORDER_FUNCTION_CALL |]
 
-//Intellisense variable get property block
+//Intellisense variable get property block: need language name suffix to prevent collisions with other languages
 makeMemberIntellisenseBlock 
-  "varGetProperty"
+  "varGetPropertyPython"
   "from"
   "get"
   (fun (ie : IntellisenseEntry) -> not( ie.isFunction ))
@@ -917,7 +917,7 @@ makeMemberIntellisenseBlock
 
 //Intellisense method block
 makeMemberIntellisenseBlock 
-  "varDoMethod"
+  "varDoMethodPython"
   "with"
   "do"
   (fun (ie : IntellisenseEntry) -> ie.isFunction )
@@ -926,7 +926,7 @@ makeMemberIntellisenseBlock
 
 //Intellisense class constructor block
 makeMemberIntellisenseBlock 
-  "varCreateObject"
+  "varCreateObjectPython"
   "with"
   "create"
   (fun (ie : IntellisenseEntry) -> ie.isClass )
@@ -957,25 +957,31 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
       let shadowBlockDom = Blockly.xml.textToDom("<value name='DELTA'><shadow type='math_number'><field name='NUM'>1</field></shadow></value>")
       xml.appendChild(shadowBlockDom) |> ignore
       xmlList.Add(xml)
+    //switch intellisense blocks in category depending on current kernel
+    let isPython = 
+      match GetKernel() with
+      | Some(_,k) -> k.name.Contains("python")
+      | _ -> false
+
     //variable property block
-    if blockly?Blocks?varGetProperty then
+    if blockly?Blocks?varGetPropertyPython && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varGetProperty")
-      xml.setAttribute("gap", if blockly?Blocks?varGetProperty then "20" else "8")
+      xml.setAttribute("type", "varGetPropertyPython")
+      xml.setAttribute("gap", if blockly?Blocks?varGetPropertyPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable method block
-    if blockly?Blocks?varDoMethod then
+    if blockly?Blocks?varDoMethodPython  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varDoMethod")
-      xml.setAttribute("gap", if blockly?Blocks?varDoMethod then "20" else "8")
+      xml.setAttribute("type", "varDoMethodPython")
+      xml.setAttribute("gap", if blockly?Blocks?varDoMethodPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable create object block
-    if blockly?Blocks?varCreateObject then
+    if blockly?Blocks?varCreateObjectPython  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varCreateObject")
-      xml.setAttribute("gap", if blockly?Blocks?varCreateObject then "20" else "8")
+      xml.setAttribute("type", "varCreateObjectPython")
+      xml.setAttribute("gap", if blockly?Blocks?varCreateObjectPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable indexer block
