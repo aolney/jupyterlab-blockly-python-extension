@@ -2,7 +2,7 @@
 
 A [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) extension implementing a Blockly palette for the Python language using [Fable](https://fable.io/) tooling.
 
-**This extension supercedes [the original](https://github.com/aolney/fable-jupyterlab-blockly-extension) by allowing multiple such extensions (e.g. the [R extension](https://github.com/aolney/jupyterlab-blockly-r-extension) to coexist in parallel.**
+**This extension supercedes [the original](https://github.com/aolney/fable-jupyterlab-blockly-extension) by allowing multiple such extensions (e.g. the [R extension](https://github.com/aolney/jupyterlab-blockly-r-extension)) to coexist in parallel.**
 
 The following query string parameters enable functionality:
 

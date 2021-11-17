@@ -123,7 +123,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                 // Browser.Dom.console.log( "kernel message: " + args.header.msg_type.ToString() )
                 let messageType = args.header.msg_type.ToString()
                 if messageType = "execute_input" then
-                    Browser.Dom.console.log ("kernel executed code, updating intellisense")
+                    Browser.Dom.console.log ("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense")
                     //log executed code as string
                     Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code" (args.content?code |> Some) )
                     Toolbox.UpdateAllIntellisense()
@@ -187,7 +187,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                     //     "toolbox" ==> ~~ [ "toolbox" ==> toolbox2 ] //TODO: using toolbox2 same as using empty string here
                     // ] :?> Object
                     )
-            console.log ("blockly palette initialized")
+            console.log ("jupyterlab_blockly_extension_python: blockly palette initialized")
 
             ///Add listeners for logging; see https://developers.google.com/blockly/guides/configure/web/events
             let logListener = System.Func<Blockly.Events.Abstract__Class,unit>(fun e ->
@@ -215,7 +215,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
             )
             //check if logging should occur
             if Logging.logUrl.IsSome then 
-              console.log ("!!! Logging select blockly actions to server !!!")
+              console.log ("jupyterlab_blockly_extension_python: !!! Logging select blockly actions to server !!!")
 
             this.workspace.removeChangeListener(logListener) |> ignore  //remove if already exists; for re-entrancy
             this.workspace.addChangeListener(logListener) |> ignore         
@@ -271,9 +271,9 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
             with
             | e -> 
               Browser.Dom.window.alert("Unable to perform 'Code to Blocks': XML is either invald or renames existing variables. Specific error message is: " + e.Message )
-              console.log ("unable to decode blocks: last line is invald xml")
+              console.log ("jupyterlab_blockly_extension_python: unable to decode blocks, last line is invald xml")
           else
-            console.log ("unable to decode blocks: active cell is null")
+            console.log ("jupyterlab_blockly_extension_python: unable to decode blocks, active cell is null")
 
         /// Render blocks to code
         member this.RenderCode() =
@@ -291,11 +291,11 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                   code //overwrite
                   // notebooks.activeCell.model.value.text + code //append 
                   + "\n#" + Toolbox.encodeWorkspace()  //workspace as comment
-              console.log ("wrote to active cell:\n" + code + "\n")
+              console.log ("jupyterlab_blockly_extension_python: wrote to active cell\n" + code + "\n")
               Logging.LogToServer( Logging.JupyterLogEntry082720.Create "blocks-to-code"  ( notebooks.activeCell.model.value.text |> Some) )
               this.blocksRendered <- true
           else
-              console.log ("no cell active, flushed:\n" + code + "\n")
+              console.log ("jupyterlab_blockly_extension_python: no cell active, flushed\n" + code + "\n")
 
         /// Auto-save: Render blocks to code if we are on a code cell, we've previously saved to it, and have any blocks on the workspace
         member this.RenderCodeToLastCell() =
@@ -315,13 +315,13 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                         code //overwrite
                         // notebooks.activeCell.model.value.text + code //append 
                         + "\n#" + Toolbox.encodeWorkspace()  //workspace as comment
-                    console.log ("wrote to active cell:\n" + code + "\n")
+                    console.log ("jupyterlab_blockly_extension_python: wrote to active cell\n" + code + "\n")
                     Logging.LogToServer( Logging.JupyterLogEntry082720.Create "blocks-to-code-autosave"  ( notebooks.activeCell.model.value.text |> Some) )
                     //clearBlocks() //let these blocks float like any other
                 // flag that we have written code
                 // this.blocksWritten <- true
           else
-              console.log ("no cell active, flushed instead of autosave:\n" + code + "\n")
+              console.log ("jupyterlab_blockly_extension_python: no cell active, flushed instead of autosave\n" + code + "\n")
     end
            
 /// Return a MainAreaWidget wrapping a BlocklyWidget
@@ -357,7 +357,7 @@ let runCommandOnNotebookChanged =
             match sender.currentWidget with
             | Some( notebook ) -> 
               // app.commands.execute(command) |> ignore
-              console.log("notebook changed, autorunning blockly python command")
+              console.log("jupyterlab_blockly_extension_python: notebook changed, autorunning blockly python command")
               jsThis<JupyterlabApplication.JupyterFrontEnd<JupyterlabApplication.LabShell>>.commands.execute("blockly_python:open") |> ignore    
             | None -> ()
             //
@@ -373,7 +373,7 @@ let onKernelChanged =
       | Some(kernel) ->
           let ikernel = kernel :?> IKernel
           ikernel.iopubMessage.connect (widget.onKernelExecuted, widget ) |> ignore
-          console.log ("Listening for kernel messages (we expect Python kernel)")
+          console.log ("jupyterlab_blockly_extension_python: Listening for kernel messages")
           widget.notHooked <- false
       | None -> ()
       //
@@ -389,7 +389,7 @@ let onNotebookChanged =
             let blocklyWidget = jsThis<BlocklyWidget> //"this" not defined in promise context
             match sender.currentWidget with
             | Some( notebook ) -> 
-              console.log("notebook changed to " + notebook.context.path )
+              console.log("jupyterlab_blockly_extension_python: notebook changed to " + notebook.context.path )
               Logging.LogToServer( Logging.JupyterLogEntry082720.Create "notebook-changed"  ( notebook.context.path |> Some) )
               notebook.session.kernelChanged.connect( onKernelChanged, blocklyWidget ) |> ignore
             | None -> ()
@@ -407,7 +407,7 @@ let extension =
           //NOTE: this **must** be wrapped in a Func, otherwise the arguments are tupled and Jupyter doesn't expect that
           //------------------------------------------------------------------------------------------------------------
           "activate" ==> System.Func<JupyterlabApplication.JupyterFrontEnd<JupyterlabApplication.LabShell>, JupyterlabApputils.ICommandPalette, JupyterlabNotebook.Tokens.INotebookTracker, JupyterlabApplication.ILayoutRestorer, unit>(fun app palette notebooks restorer ->
-                            console.log ("JupyterLab extension jupyterlab_blockly_extension_python is activated!")
+                            console.log ("jupyterlab_blockly_extension_python: activated")
                             
                             //Create a blockly widget and place inside main area widget
                             let blocklyWidget = BlocklyWidget(notebooks)
@@ -454,7 +454,7 @@ let extension =
                             let searchParams = Browser.Url.URLSearchParams.Create(  Browser.Dom.window.location.search )
                             match searchParams.get("bl") with
                             | Some(state) when state = "1" ->
-                              console.log ("Blockly Python extension triggering open command based on query string input")
+                              console.log ("jupyterlab_blockly_extension_python: triggering open command based on query string input")
                               app.restored.``then``(fun _ -> 
                                 //wait until a notebook is displayed so we dock correctly (e.g. nbgitpuller deployment)
                                 //NOTE: workspaces are stateful, so the notebook must be closed, then openned in the workspace for this to fire
