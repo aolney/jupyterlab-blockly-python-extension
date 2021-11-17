@@ -957,22 +957,28 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
       let shadowBlockDom = Blockly.xml.textToDom("<value name='DELTA'><shadow type='math_number'><field name='NUM'>1</field></shadow></value>")
       xml.appendChild(shadowBlockDom) |> ignore
       xmlList.Add(xml)
+    //switch intellisense blocks in category depending on current kernel
+    let isPython = 
+      match GetKernel() with
+      | Some(_,k) -> k.name.Contains("python")
+      | _ -> false
+
     //variable property block
-    if blockly?Blocks?varGetPropertyPython then
+    if blockly?Blocks?varGetPropertyPython && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varGetPropertyPython")
       xml.setAttribute("gap", if blockly?Blocks?varGetPropertyPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable method block
-    if blockly?Blocks?varDoMethodPython then
+    if blockly?Blocks?varDoMethodPython  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varDoMethodPython")
       xml.setAttribute("gap", if blockly?Blocks?varDoMethodPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable create object block
-    if blockly?Blocks?varCreateObjectPython then
+    if blockly?Blocks?varCreateObjectPython  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varCreateObjectPython")
       xml.setAttribute("gap", if blockly?Blocks?varCreateObjectPython then "20" else "8")

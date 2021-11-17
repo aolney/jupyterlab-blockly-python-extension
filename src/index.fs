@@ -373,7 +373,7 @@ let onKernelChanged =
       | Some(kernel) ->
           let ikernel = kernel :?> IKernel
           ikernel.iopubMessage.connect (widget.onKernelExecuted, widget ) |> ignore
-          console.log ("Listening for python kernel messages")
+          console.log ("Listening for kernel messages (we expect Python kernel)")
           widget.notHooked <- false
       | None -> ()
       //
