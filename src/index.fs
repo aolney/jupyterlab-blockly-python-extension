@@ -121,17 +121,19 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
         member this.onKernelExecuted =
             PhosphorSignaling.Slot<IKernel, IIOPubMessage>(fun sender args ->
                 // Browser.Dom.console.log( "kernel message: " + args.header.msg_type.ToString() )
-                let messageType = args.header.msg_type.ToString()
-                if messageType = "execute_input" then
-                    Browser.Dom.console.log ("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense")
-                    //log executed code as string
-                    Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code" (args.content?code |> Some) )
-                    Toolbox.UpdateAllIntellisense()
-                //also hook errors here; log entire error object as json
-                //else if messageType = "execute_reply" && args.content?status="error" then //would require subscribing to shell channel
-                else if messageType = "error" then
-                  Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code-error" ( JS.JSON.stringify(args.content) |> Some) )
-                    
+                //only respond to messages from the kernel we care about
+                if sender.name.Contains("python") then
+                  let messageType = args.header.msg_type.ToString()
+                  if messageType = "execute_input" then
+                      Browser.Dom.console.log ("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense")
+                      //log executed code as string
+                      Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code" (args.content?code |> Some) )
+                      Toolbox.UpdateAllIntellisense()
+                  //also hook errors here; log entire error object as json
+                  //else if messageType = "execute_reply" && args.content?status="error" then //would require subscribing to shell channel
+                  else if messageType = "error" then
+                    Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code-error" ( JS.JSON.stringify(args.content) |> Some) )
+                      
                 true)
         
         member this.onActiveCellChanged =
@@ -371,6 +373,8 @@ let onKernelChanged =
     if widget.notHooked then
       match sender.kernel with
       | Some(kernel) ->
+        //only respond to messages from the kernel we care about
+        if kernel.name.Contains("python") then
           let ikernel = kernel :?> IKernel
           ikernel.iopubMessage.connect (widget.onKernelExecuted, widget ) |> ignore
           console.log ("jupyterlab_blockly_extension_python: Listening for kernel messages")
