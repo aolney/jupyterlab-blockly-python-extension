@@ -47,7 +47,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
             notebooks.activeCellChanged.connect( this.onActiveCellChanged, this ) |> ignore
 
             //inject intellisense dependency into Blockly toolbox
-            Toolbox.notebooks <- notebooks
+            PythonToolbox.notebooks <- notebooks
 
             //div to hold blockly
             let div = document.createElement ("div")
@@ -128,7 +128,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                       Browser.Dom.console.log ("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense")
                       //log executed code as string
                       Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code" (args.content?code |> Some) )
-                      Toolbox.UpdateAllIntellisense()
+                      PythonToolbox.UpdateAllIntellisense()
                   //also hook errors here; log entire error object as json
                   //else if messageType = "execute_reply" && args.content?status="error" then //would require subscribing to shell channel
                   else if messageType = "error" then
@@ -160,7 +160,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                 else
                   this.RenderBlocks()
                 //Update intellisense on blocks we just created
-                Toolbox.UpdateAllIntellisense()
+                PythonToolbox.UpdateAllIntellisense()
 
               // if autosave enabled, attempt to save our current blocks to the previous cell we just navigated off (to prevent losing work)
               if isChecked(autosaveCheckbox) && notebooks.activeCell <> null then
@@ -183,7 +183,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                 blockly.inject
                     (!^"blocklyDivPython",
                      // Tricky: creatObj cannot be used here. Must use jsOptions to create POJO
-                     jsOptions<Blockly.BlocklyOptions> (fun o -> o.toolbox <- !^Toolbox.toolbox |> Some)
+                     jsOptions<Blockly.BlocklyOptions> (fun o -> o.toolbox <- !^PythonToolbox.toolbox |> Some)
                     // THIS FAILS!
                     // ~~ [
                     //     "toolbox" ==> ~~ [ "toolbox" ==> toolbox2 ] //TODO: using toolbox2 same as using empty string here
@@ -265,7 +265,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
               match xmlStringOption with
               | Some(xmlString) -> 
                     clearBlocks()
-                    Toolbox.decodeWorkspace ( xmlString )
+                    PythonToolbox.decodeWorkspace ( xmlString )
                     // overwritten by logger callback
                     // this.blocksRendered <- true
                     Logging.LogToServer( Logging.JupyterLogEntry082720.Create "xml-to-blocks"  ( xmlString |> Some ) )
@@ -292,7 +292,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
               notebooks.activeCell.model.value.text <-
                   code //overwrite
                   // notebooks.activeCell.model.value.text + code //append 
-                  + "\n#" + Toolbox.encodeWorkspace()  //workspace as comment
+                  + "\n#" + PythonToolbox.encodeWorkspace()  //workspace as comment
               console.log ("jupyterlab_blockly_extension_python: wrote to active cell\n" + code + "\n")
               Logging.LogToServer( Logging.JupyterLogEntry082720.Create "blocks-to-code"  ( notebooks.activeCell.model.value.text |> Some) )
               this.blocksRendered <- true
@@ -316,7 +316,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                     this.lastCell.model.value.text <-
                         code //overwrite
                         // notebooks.activeCell.model.value.text + code //append 
-                        + "\n#" + Toolbox.encodeWorkspace()  //workspace as comment
+                        + "\n#" + PythonToolbox.encodeWorkspace()  //workspace as comment
                     console.log ("jupyterlab_blockly_extension_python: wrote to active cell\n" + code + "\n")
                     Logging.LogToServer( Logging.JupyterLogEntry082720.Create "blocks-to-code-autosave"  ( notebooks.activeCell.model.value.text |> Some) )
                     //clearBlocks() //let these blocks float like any other
