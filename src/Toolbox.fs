@@ -181,7 +181,7 @@ blockly?Python.["readFile_Python"] <- fun (block : Blockly.Block) ->
 
 
 /// A template to create arbitrary code blocks (FREESTYLE) in these dimensions: dummy/input; output/nooutput
-let makeCodeBlock (blockName:string) (hasInput: bool) (hasOutput: bool) =
+let makeCodeBlock_Python (blockName:string) (hasInput: bool) (hasOutput: bool) =
   blockly?Blocks.[blockName] <- createObj [
     "init" ==> fun () ->
       let input = if hasInput then thisBlock.appendValueInput("INPUT").setCheck(!^None) else thisBlock.appendDummyInput()
@@ -212,13 +212,13 @@ let makeCodeBlock (blockName:string) (hasInput: bool) (hasOutput: bool) =
       code + "\n" |> unbox
 
 //Make all varieties of code block
-makeCodeBlock "dummyOutputCodeBlock_Python" false true
-makeCodeBlock "dummyNoOutputCodeBlock_Python" false false
-makeCodeBlock "valueOutputCodeBlock_Python" true true
-makeCodeBlock "valueNoOutputCodeBlock_Python" true false
+makeCodeBlock_Python "dummyOutputCodeBlock_Python" false true
+makeCodeBlock_Python "dummyNoOutputCodeBlock_Python" false false
+makeCodeBlock_Python "valueOutputCodeBlock_Python" true true
+makeCodeBlock_Python "valueNoOutputCodeBlock_Python" true false
 
 /// Create a Blockly/Python templated import block: TODO if we make this part of the variable menu, then users will never need to rename variable after using the block
-let makeImportBlock (blockName:string) (labelOne:string) (labelTwo:string)  =
+let makeImportBlock_Python (blockName:string) (labelOne:string) (labelTwo:string)  =
   blockly?Blocks.[ blockName ] <- createObj [
     "init" ==> fun () -> 
       // Browser.Dom.console.log("did import block init")
@@ -241,10 +241,10 @@ let makeImportBlock (blockName:string) (labelOne:string) (labelTwo:string)  =
     code
 
 //make import as block
-makeImportBlock "importAs_Python" "import" "as"
+makeImportBlock_Python "importAs_Python" "import" "as"
 
 //make from import block
-makeImportBlock "importFrom_Python" "from" "import"
+makeImportBlock_Python "importFrom_Python" "from" "import"
 
 /// indexer block
 blockly?Blocks.[ "indexer_Python" ] <- createObj [
@@ -269,7 +269,7 @@ blockly?Python.[ "indexer_Python" ] <- fun (block : Blockly.Block) ->
 
 
 /// A template for variable argument function block creation (where arguments are in a list), including the code generator.
-let makeFunctionBlock (blockName:string) (label:string) (outputType:string) (tooltip:string) (helpurl:string) (functionStr:string) =
+let makeFunctionBlock_Python (blockName:string) (label:string) (outputType:string) (tooltip:string) (helpurl:string) (functionStr:string) =
   blockly?Blocks.[blockName] <- createObj [
     "init" ==> fun () -> 
       Browser.Dom.console.log( blockName + " init")
@@ -302,7 +302,7 @@ let makeFunctionBlock (blockName:string) (label:string) (outputType:string) (too
 //   "sort"
 
 // reversed
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "reversedBlock_Python"
   "reversed"
   "None"
@@ -311,7 +311,7 @@ makeFunctionBlock
   "reversed"
 
 // tuple
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "tupleConstructorBlock_Python"
   "tuple"
   "None"
@@ -320,7 +320,7 @@ makeFunctionBlock
   "tuple"
 
 // dict
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "dictBlock_Python"
   "dict"
   "None"
@@ -329,7 +329,7 @@ makeFunctionBlock
   "dict"
 
 // zip
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "zipBlock_Python"
   "zip"
   "Array"
@@ -338,7 +338,7 @@ makeFunctionBlock
   "zip"
 
 // sorted
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "sortedBlock_Python"
   "as sorted"
   "Array"
@@ -347,7 +347,7 @@ makeFunctionBlock
   "sorted"
 
 // set: TODO only accept lists, setCheck("Array")
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "setBlock_Python"
   "set"
   "Array"
@@ -356,7 +356,7 @@ makeFunctionBlock
   "set"
 
 // Conversion blocks, e.g. str()
-makeFunctionBlock 
+makeFunctionBlock_Python 
   "boolConversion_Python"
   "as bool"
   "Boolean"
@@ -364,7 +364,7 @@ makeFunctionBlock
   "https://docs.python.org/3/library/stdtypes.html#boolean-values"
   "bool"
 
-makeFunctionBlock
+makeFunctionBlock_Python
   "strConversion_Python"
   "as str"
   "String"
@@ -372,7 +372,7 @@ makeFunctionBlock
   "https://docs.python.org/3/library/stdtypes.html#str"
   "str"
 
-makeFunctionBlock
+makeFunctionBlock_Python
   "floatConversion_Python"
   "as float"
   "Number"
@@ -380,7 +380,7 @@ makeFunctionBlock
   "https://docs.python.org/3/library/functions.html#float"
   "float"
 
-makeFunctionBlock
+makeFunctionBlock_Python
   "intConversion_Python"
   "as int"
   "Number" 
@@ -389,7 +389,7 @@ makeFunctionBlock
   "int"
 
 // Get user input, e.g. input()
-makeFunctionBlock
+makeFunctionBlock_Python
   "getInput_Python"
   "input"
   "String"
@@ -575,22 +575,22 @@ let intellisenseLookup = new System.Collections.Generic.Dictionary<string,Intell
 // let nameDocMap = new System.Collections.Generic.Dictionary<string,string>()
 
 /// Determine if an entry is a function. We have separate blocks for properties and functions because only function blocks need parameters
-let isFunction( info : string ) = info.Contains("Type: function")
+let isFunction_Python( info : string ) = info.Contains("Type: function")
 
 /// Determine if an entry is a class. 
-let isClass( info : string ) = info.Contains("Type: class")
+let isClass_Python( info : string ) = info.Contains("Type: class")
 
 /// Request an IntellisenseVariable. If the type does not descend from object, the children will be empty.
 /// Sometimes we will create a variable but it will have no type until we make an assignment. 
 /// We might also create a variable and then change its type.
 /// So we need to check for introspections/completions repeatedly (no caching right now).
-let RequestIntellisenseVariable(block : Blockly.Block) ( parentName : string ) =
+let RequestIntellisenseVariable_Python(block : Blockly.Block) ( parentName : string ) =
   // if not <| intellisenseLookup.ContainsKey( name ) then //No caching; see above
   // Update the intellisenseLookup asynchronously. First do an info lookup. If var is not an instance type, continue to doing tooltip lookup
   promise {
     try
       let! parentInspection = GetKernalInspection( parentName )
-      let parent = { Name=parentName;  Info=parentInspection; isFunction=isFunction(parentInspection); isClass=isClass(parentInspection) }
+      let parent = { Name=parentName;  Info=parentInspection; isFunction=isFunction_Python(parentInspection); isClass=isClass_Python(parentInspection) }
       // V2 store the name/docstring pair. This is always overwritten(*Updating*).
       // if not <| nameDocMap.ContainsKey( parentName ) then nameDocMap.Add(parentName,parentInspection) else nameDocMap.[parentName] <- parentInspection
 
@@ -645,7 +645,7 @@ let RequestIntellisenseVariable(block : Blockly.Block) ( parentName : string ) =
         let children = 
             Array.zip safeCompletions inspections 
             |> Array.map( fun (completion,inspection) -> 
-              {Name=completion; Info=inspection; isFunction=isFunction(inspection); isClass=isClass(inspection) }
+              {Name=completion; Info=inspection; isFunction=isFunction_Python(inspection); isClass=isClass_Python(inspection) }
             ) 
         let intellisenseVariable = { VariableEntry=parent; ChildEntries=children}
         // Store so we can synchronously find results later; if we have seen this var before, overwrite.
@@ -692,10 +692,10 @@ let RequestIntellisenseVariable(block : Blockly.Block) ( parentName : string ) =
 //   // At this stage the VAR field is not associated with the variable name presented to the user, e.g. "x"
 //   //We can get a list of variables by accessing the workspace. The last variable created is the last element in the list returned.
 //   let lastVar = block.workspace.getAllVariables() |> Seq.last
-let requestAndStubOptions (block : Blockly.Block) ( varName : string ) =
+let requestAndStubOptions_Python (block : Blockly.Block) ( varName : string ) =
   if varName <> "" && not <| block.isInFlyout then //flyout restriction prevents triple requests for intellisense blocks in flyout
     //initiate an intellisense request asynchronously
-    varName |> RequestIntellisenseVariable block
+    varName |> RequestIntellisenseVariable_Python block
   //return an option stub while we wait
   if block.isInFlyout then
     [| [| " "; " " |] |]
@@ -704,7 +704,7 @@ let requestAndStubOptions (block : Blockly.Block) ( varName : string ) =
   else
     [| [| "!Not defined until you execute code."; "!Not defined until you execute code." |] |]
 
-let getIntellisenseMemberOptions(memberSelectionFunction : IntellisenseEntry -> bool) ( varName : string ) =
+let getIntellisenseMemberOptions_Python(memberSelectionFunction : IntellisenseEntry -> bool) ( varName : string ) =
   match  varName |> intellisenseLookup.TryGetValue with
   | true, iv when not(iv.VariableEntry.isFunction) && iv.ChildEntries.Length > 0  -> 
       //NOTE: for dropdowns, blockly returns the label, e.g. "VAR", not the value displayed to the user. Making them identical allows us to get the value displayed to user
@@ -728,12 +728,12 @@ let getIntellisenseMemberTooltip( varName : string ) (memberName : string )=
   | false, _ -> "!Not defined until you execute code."
 
 /// Update all the blocks that use intellisense. Called after the kernel executes a cell so our intellisense in Blockly is updated.
-let UpdateAllIntellisense() =
+let UpdateAllIntellisense_Python() =
   let workspace = blockly.getMainWorkspace()
-  let blocks = workspace.getBlocksByType("varGetProperty", false)
-  blocks.AddRange( workspace.getBlocksByType("varDoMethod", false) )
+  let blocks = workspace.getBlocksByType("varGetProperty_Python", false)
+  blocks.AddRange( workspace.getBlocksByType("varDoMethod_Python", false) )
   for b in blocks do
-    b?updateIntellisense(b,None, requestAndStubOptions b) 
+    b?updateIntellisense(b,None, requestAndStubOptions_Python b) 
 
 /// Remove a field from a block safely, even if it doesn't exist
 let SafeRemoveField( block:Blockly.Block ) ( fieldName : string ) ( inputName : string )=
@@ -746,7 +746,7 @@ let SafeRemoveField( block:Blockly.Block ) ( fieldName : string ) ( inputName : 
 // TODO: CHANGE OUTPUT CONNECTOR DEPENDING ON INTELLISENSE: IF FUNCTION DOESN'T HAVE AN OUTPUT, REMOVE CONNECTOR
 /// Make a block that has an intellisense-populated member dropdown. The member type is property or method, defined by the filter function
 /// Note the "blockName" given to these is hardcoded elsewhere, e.g. the toolbox and intellisense update functions
-let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:string) (memberSelectionFunction: IntellisenseEntry -> bool ) ( hasArgs : bool ) ( hasDot : bool )= 
+let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (verb:string) (memberSelectionFunction: IntellisenseEntry -> bool ) ( hasArgs : bool ) ( hasDot : bool )= 
   blockly?Blocks.[blockName] <- createObj [
 
     //Get the user-facing name of the selected variable; on creation, defaults to created name
@@ -807,7 +807,7 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
 
         //Since we are leveraging the validator, we return the selected value without modification
         newMemberSelection |> unbox)
-       ) :> Blockly.Field), "MEMBER"  ) |> ignore 
+        ) :> Blockly.Field), "MEMBER"  ) |> ignore 
 
       //back up to XML data if valide; when the deserialized XML contains data, we should never overwrite it here
       if thisBlockClosure?data = null then
@@ -837,16 +837,16 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
           // Within validator, "this" refers to FieldVariable not block.
           let (thisFieldVariable : Blockly.FieldVariable) = !!thisObj
           // update the options FieldDropdown by recreating it with the newly selected variable name
-          thisBlockClosure?updateIntellisense( thisBlockClosure, Some(newSelection), requestAndStubOptions thisBlockClosure  )
+          thisBlockClosure?updateIntellisense( thisBlockClosure, Some(newSelection), requestAndStubOptions_Python thisBlockClosure  )
           //Since we are leveraging the validator, we return the selected value without modification
           newSelection |> unbox)
-         ) :?> Blockly.Field), "VAR"  )
+          ) :?> Blockly.Field), "VAR"  )
 
         .appendField( !^verb) |> ignore
         
         // Create the options FieldDropdown using "optionsGenerator" with the selected name, currently None
         // .appendField( !^(blockly.FieldDropdown.Create( thisBlock?varSelectionUserName(thisBlockClosure, None) |> requestAndStubOptions thisBlock ) :> Blockly.Field), "MEMBER"  ) |> ignore 
-      thisBlockClosure?updateIntellisense( thisBlockClosure, None, requestAndStubOptions thisBlockClosure) //adds the member fields, triggering intellisense
+      thisBlockClosure?updateIntellisense( thisBlockClosure, None, requestAndStubOptions_Python thisBlockClosure) //adds the member fields, triggering intellisense
 
       if hasArgs then thisBlock.setInputsInline(true)
       thisBlock.setOutput(true)
@@ -869,7 +869,7 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
         let data = (thisBlock?data |> string).Split(':')
 
         // update the options FieldDropdown by recreating it with fresh intellisense
-        thisBlock?updateIntellisense( thisBlock, None, getIntellisenseMemberOptions memberSelectionFunction ) //adds the member fields, triggering intellisense
+        thisBlock?updateIntellisense( thisBlock, None, getIntellisenseMemberOptions_Python memberSelectionFunction ) //adds the member fields, triggering intellisense
 
         //restore previous member selection if possible
         let memberField = thisBlock.getField("MEMBER")
@@ -911,7 +911,7 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
     [| code; blockly?Python?ORDER_FUNCTION_CALL |]
 
 //Intellisense variable get property block: need language name suffix to prevent collisions with other languages
-makeMemberIntellisenseBlock 
+makeMemberIntellisenseBlock_Python
   "varGetProperty_Python"
   "from"
   "get"
@@ -920,7 +920,7 @@ makeMemberIntellisenseBlock
   true //has dot
 
 //Intellisense method block
-makeMemberIntellisenseBlock 
+makeMemberIntellisenseBlock_Python 
   "varDoMethod_Python"
   "with"
   "do"
@@ -929,7 +929,7 @@ makeMemberIntellisenseBlock
   true //has dot
 
 //Intellisense class constructor block
-makeMemberIntellisenseBlock 
+makeMemberIntellisenseBlock_Python
   "varCreateObject_Python"
   "with"
   "create"
