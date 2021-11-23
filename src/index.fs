@@ -128,7 +128,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                       Browser.Dom.console.log ("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense")
                       //log executed code as string
                       Logging.LogToServer( Logging.JupyterLogEntry082720.Create "execute-code" (args.content?code |> Some) )
-                      PythonToolbox.UpdateAllIntellisense()
+                      PythonToolbox.UpdateAllIntellisense_Python()
                   //also hook errors here; log entire error object as json
                   //else if messageType = "execute_reply" && args.content?status="error" then //would require subscribing to shell channel
                   else if messageType = "error" then
@@ -160,7 +160,7 @@ type BlocklyWidget(notebooks: JupyterlabNotebook.Tokens.INotebookTracker) as thi
                 else
                   this.RenderBlocks()
                 //Update intellisense on blocks we just created
-                PythonToolbox.UpdateAllIntellisense()
+                PythonToolbox.UpdateAllIntellisense_Python()
 
               // if autosave enabled, attempt to save our current blocks to the previous cell we just navigated off (to prevent losing work)
               if isChecked(autosaveCheckbox) && notebooks.activeCell <> null then
