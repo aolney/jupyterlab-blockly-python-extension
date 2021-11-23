@@ -1,4 +1,4 @@
-module Toolbox
+module PythonToolbox
 
 open Fable.Core
 open Fable.Core.JsInterop
@@ -86,10 +86,12 @@ let decodeWorkspace( xmlText ) =
 // DEFINING BLOCKS BELOW
 //--------------------------------------------------------------------------------------------------
 
+// TODO: suffix each block definition with "_Python" to avoid name collisions with other languages
+
 // comprehension block (goes inside list block for list comprehension)
-blockly?Blocks.["comprehensionForEach"] <- createObj [
+blockly?Blocks.["comprehensionForEach_Python"] <- createObj [
   "init" ==> fun () ->
-    Browser.Dom.console.log( "comprehensionForEach" + " init")
+    Browser.Dom.console.log( "comprehensionForEach_Python" + " init")
     thisBlock.appendValueInput("LIST")
       .setCheck(!^None)
       .appendField( !^"for each item"  )
@@ -104,7 +106,7 @@ blockly?Blocks.["comprehensionForEach"] <- createObj [
     thisBlock.setTooltip !^("Use this to generate a sequence of elements, also known as a comprehension. Often used for list comprehensions." )
     thisBlock.setHelpUrl !^"https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions"
   ]
-blockly?Python.["comprehensionForEach"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["comprehensionForEach_Python"] <- fun (block : Blockly.Block) -> 
   let var = blockly?Python?variableDB_?getName( block.getFieldValue("VAR").Value |> string, blockly?Variables?NAME_TYPE);
   let list = blockly?Python?valueToCode( block, "LIST", blockly?Python?ORDER_ATOMIC )
   let yieldValue = blockly?Python?valueToCode( block, "YIELD", blockly?Python?ORDER_ATOMIC )
@@ -112,9 +114,9 @@ blockly?Python.["comprehensionForEach"] <- fun (block : Blockly.Block) ->
   [| code; blockly?Python?ORDER_ATOMIC |] //TODO: COMPREHENSION PRECEDENCE IS ADDING () NESTING; SEE SCREENSHOT; TRY ORDER NONE?
 
 // with as block
-blockly?Blocks.["withAs"] <- createObj [
+blockly?Blocks.["withAs_Python"] <- createObj [
   "init" ==> fun () ->
-    Browser.Dom.console.log( "withAs" + " init")
+    Browser.Dom.console.log( "withAs_Python" + " init")
     thisBlock.appendValueInput("EXPRESSION")
       .setCheck(!^None)
       .appendField( !^"with"  ) |> ignore
@@ -130,7 +132,7 @@ blockly?Blocks.["withAs"] <- createObj [
     thisBlock.setTooltip !^("Use this to open resources (usually file-type) in a way that automatically handles errors and disposes of them when done. May not be supported by all libraries." )
     thisBlock.setHelpUrl !^"https://docs.python.org/3/reference/compound_stmts.html#with"
   ]
-blockly?Python.["withAs"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["withAs_Python"] <- fun (block : Blockly.Block) -> 
   let expressionCode = blockly?Python?valueToCode( block, "EXPRESSION", blockly?Python?ORDER_ATOMIC ) |> string
   let targetCode = blockly?Python?variableDB_?getName( block.getFieldValue("TARGET").Value |> string, blockly?Variables?NAME_TYPE) |> string
   let suiteCode = blockly?Python?statementToCode( block, "SUITE" ) //|| blockly?Python?PASS 
@@ -140,9 +142,9 @@ blockly?Python.["withAs"] <- fun (block : Blockly.Block) ->
 
 
 // TEXT file read block
-blockly?Blocks.["textFromFile"] <- createObj [
+blockly?Blocks.["textFromFile_Python"] <- createObj [
   "init" ==> fun () ->
-    Browser.Dom.console.log( "textFromFile" + " init")
+    Browser.Dom.console.log( "textFromFile_Python" + " init")
     thisBlock.appendValueInput("FILENAME")
       .setCheck(!^"String")
       .appendField( !^"read text from file"  ) |> ignore
@@ -153,16 +155,16 @@ blockly?Blocks.["textFromFile"] <- createObj [
     thisBlock.setHelpUrl !^"https://docs.python.org/3/tutorial/inputoutput.html"
   ]
 // Generate Python template code
-blockly?Python.["textFromFile"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["textFromFile_Python"] <- fun (block : Blockly.Block) -> 
   let fileName = blockly?Python?valueToCode( block, "FILENAME", blockly?Python?ORDER_ATOMIC )
   // let fileName = block.getFieldValue("FILENAME").Value |> string
   let code = "open(" + fileName + ",encoding='utf-8').read()"
   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
 
 // GENERAL file read block
-blockly?Blocks.["readFile"] <- createObj [
+blockly?Blocks.["readFile_Python"] <- createObj [
   "init" ==> fun () ->
-    Browser.Dom.console.log( "readFile" + " init")
+    Browser.Dom.console.log( "readFile_Python" + " init")
     thisBlock.appendDummyInput()
       .appendField( !^"read file"  )
       .appendField( !^(blockly.FieldTextInput.Create("type filename here...") :?> Blockly.Field), "FILENAME"  ) |> ignore
@@ -172,7 +174,7 @@ blockly?Blocks.["readFile"] <- createObj [
     thisBlock.setHelpUrl !^"https://docs.python.org/3/tutorial/inputoutput.html"
   ]
 // Generate Python template code
-blockly?Python.["readFile"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["readFile_Python"] <- fun (block : Blockly.Block) -> 
   let fileName = block.getFieldValue("FILENAME").Value |> string
   let code = "open('" + fileName + "',encoding='utf-8')"
   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
@@ -210,10 +212,10 @@ let makeCodeBlock (blockName:string) (hasInput: bool) (hasOutput: bool) =
       code + "\n" |> unbox
 
 //Make all varieties of code block
-makeCodeBlock "dummyOutputCodeBlock" false true
-makeCodeBlock "dummyNoOutputCodeBlock" false false
-makeCodeBlock "valueOutputCodeBlock" true true
-makeCodeBlock "valueNoOutputCodeBlock" true false
+makeCodeBlock "dummyOutputCodeBlock_Python" false true
+makeCodeBlock "dummyNoOutputCodeBlock_Python" false false
+makeCodeBlock "valueOutputCodeBlock_Python" true true
+makeCodeBlock "valueNoOutputCodeBlock_Python" true false
 
 /// Create a Blockly/Python templated import block: TODO if we make this part of the variable menu, then users will never need to rename variable after using the block
 let makeImportBlock (blockName:string) (labelOne:string) (labelTwo:string)  =
@@ -239,13 +241,13 @@ let makeImportBlock (blockName:string) (labelOne:string) (labelTwo:string)  =
     code
 
 //make import as block
-makeImportBlock "importAs" "import" "as"
+makeImportBlock "importAs_Python" "import" "as"
 
 //make from import block
-makeImportBlock "importFrom" "from" "import"
+makeImportBlock "importFrom_Python" "from" "import"
 
 /// indexer block
-blockly?Blocks.[ "indexer" ] <- createObj [
+blockly?Blocks.[ "indexer_Python" ] <- createObj [
   "init" ==> fun () -> 
     thisBlock.appendValueInput("INDEX")
       .appendField( !^(blockly.FieldVariable.Create("{dictVariable}") :?> Blockly.Field), "VAR"  )
@@ -259,7 +261,7 @@ blockly?Blocks.[ "indexer" ] <- createObj [
     thisBlock.setHelpUrl !^"https://docs.python.org/3/reference/datamodel.html#object.__getitem__"
   ]
 /// Generate Python import code
-blockly?Python.[ "indexer" ] <- fun (block : Blockly.Block) -> 
+blockly?Python.[ "indexer_Python" ] <- fun (block : Blockly.Block) -> 
   let varName = blockly?Python?variableDB_?getName( block.getFieldValue("VAR").Value |> string, blockly?Variables?NAME_TYPE);
   let input = blockly?Python?valueToCode( block, "INDEX", blockly?Python?ORDER_ATOMIC )
   let code =  varName + "[" + input + "]" //+ "\n"
@@ -301,7 +303,7 @@ let makeFunctionBlock (blockName:string) (label:string) (outputType:string) (too
 
 // reversed
 makeFunctionBlock 
-  "reversedBlock"
+  "reversedBlock_Python"
   "reversed"
   "None"
   "Create a reversed iterator to reverse a list or a tuple; wrap it in a new list or tuple."
@@ -310,7 +312,7 @@ makeFunctionBlock
 
 // tuple
 makeFunctionBlock 
-  "tupleConstructorBlock"
+  "tupleConstructorBlock_Python"
   "tuple"
   "None"
   "Create a tuple from a list, e.g. ['a','b'] becomes ('a','b')"
@@ -319,7 +321,7 @@ makeFunctionBlock
 
 // dict
 makeFunctionBlock 
-  "dictBlock"
+  "dictBlock_Python"
   "dict"
   "None"
   "Create a dictionary from a list of tuples, e.g. [('a',1),('b',2)...]"
@@ -328,7 +330,7 @@ makeFunctionBlock
 
 // zip
 makeFunctionBlock 
-  "zipBlock"
+  "zipBlock_Python"
   "zip"
   "Array"
   "Zip together two or more lists"
@@ -337,7 +339,7 @@ makeFunctionBlock
 
 // sorted
 makeFunctionBlock 
-  "sortedBlock"
+  "sortedBlock_Python"
   "as sorted"
   "Array"
   "Sort lists of stuff"
@@ -346,7 +348,7 @@ makeFunctionBlock
 
 // set: TODO only accept lists, setCheck("Array")
 makeFunctionBlock 
-  "setBlock"
+  "setBlock_Python"
   "set"
   "Array"
   "Make a set with unique members of a list."
@@ -355,7 +357,7 @@ makeFunctionBlock
 
 // Conversion blocks, e.g. str()
 makeFunctionBlock 
-  "boolConversion"
+  "boolConversion_Python"
   "as bool"
   "Boolean"
   "Convert something to Boolean."
@@ -363,7 +365,7 @@ makeFunctionBlock
   "bool"
 
 makeFunctionBlock
-  "strConversion"
+  "strConversion_Python"
   "as str"
   "String"
   "Convert something to String."
@@ -371,7 +373,7 @@ makeFunctionBlock
   "str"
 
 makeFunctionBlock
-  "floatConversion"
+  "floatConversion_Python"
   "as float"
   "Number"
   "Convert something to Float."
@@ -379,7 +381,7 @@ makeFunctionBlock
   "float"
 
 makeFunctionBlock
-  "intConversion"
+  "intConversion_Python"
   "as int"
   "Number" 
   "Convert something to Int."
@@ -388,7 +390,7 @@ makeFunctionBlock
 
 // Get user input, e.g. input()
 makeFunctionBlock
-  "getInput"
+  "getInput_Python"
   "input"
   "String"
   "Present the given prompt to the user and wait for their typed input response."
@@ -396,7 +398,7 @@ makeFunctionBlock
   "input"
 
 // Tuple block; TODO use mutator to make variable length
-blockly?Blocks.["tupleBlock"] <- createObj [
+blockly?Blocks.["tupleBlock_Python"] <- createObj [
   "init" ==> fun () ->
     thisBlock.appendValueInput("FIRST")
         .setCheck(!^None)
@@ -414,7 +416,7 @@ blockly?Blocks.["tupleBlock"] <- createObj [
 ]
 
 /// Generate Python for tuple
-blockly?Python.["tupleBlock"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["tupleBlock_Python"] <- fun (block : Blockly.Block) -> 
   let firstArg = blockly?Python?valueToCode(block, "FIRST", blockly?Python?ORDER_ATOMIC) 
   let secondArg = blockly?Python?valueToCode(block, "SECOND", blockly?Python?ORDER_ATOMIC) 
   let code = "(" +  firstArg + "," + secondArg + ")" 
@@ -910,7 +912,7 @@ let makeMemberIntellisenseBlock (blockName:string) (preposition:string) (verb:st
 
 //Intellisense variable get property block: need language name suffix to prevent collisions with other languages
 makeMemberIntellisenseBlock 
-  "varGetPropertyPython"
+  "varGetProperty_Python"
   "from"
   "get"
   (fun (ie : IntellisenseEntry) -> not( ie.isFunction ))
@@ -919,7 +921,7 @@ makeMemberIntellisenseBlock
 
 //Intellisense method block
 makeMemberIntellisenseBlock 
-  "varDoMethodPython"
+  "varDoMethod_Python"
   "with"
   "do"
   (fun (ie : IntellisenseEntry) -> ie.isFunction )
@@ -928,7 +930,7 @@ makeMemberIntellisenseBlock
 
 //Intellisense class constructor block
 makeMemberIntellisenseBlock 
-  "varCreateObjectPython"
+  "varCreateObject_Python"
   "with"
   "create"
   (fun (ie : IntellisenseEntry) -> ie.isClass )
@@ -966,23 +968,23 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
       | _ -> false
 
     //variable property block
-    if blockly?Blocks?varGetPropertyPython && isPython then
+    if blockly?Blocks?varGetProperty_Python && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varGetPropertyPython")
+      xml.setAttribute("type", "varGetProperty_Python")
       xml.setAttribute("gap", if blockly?Blocks?varGetPropertyPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable method block
-    if blockly?Blocks?varDoMethodPython  && isPython then
+    if blockly?Blocks?varDoMethod_Python  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varDoMethodPython")
+      xml.setAttribute("type", "varDoMethod_Python")
       xml.setAttribute("gap", if blockly?Blocks?varDoMethodPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable create object block
-    if blockly?Blocks?varCreateObjectPython  && isPython then
+    if blockly?Blocks?varCreateObject_Python  && isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
-      xml.setAttribute("type", "varCreateObjectPython")
+      xml.setAttribute("type", "varCreateObject_Python")
       xml.setAttribute("gap", if blockly?Blocks?varCreateObjectPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
@@ -1013,14 +1015,14 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
 let toolbox =
     """<xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
     <category name="IMPORT" colour="255">
-      <block type="importAs"></block>
-      <block type="importFrom"></block>
+      <block type="importAs_Python"></block>
+      <block type="importFrom_Python"></block>
     </category>
     <category name="FREESTYLE" colour="290">
-      <block type="dummyOutputCodeBlock"></block>
-      <block type="dummyNoOutputCodeBlock"></block>
-      <block type="valueOutputCodeBlock"></block>
-      <block type="valueNoOutputCodeBlock"></block>
+      <block type="dummyOutputCodeBlock_Python"></block>
+      <block type="dummyNoOutputCodeBlock_Python"></block>
+      <block type="valueOutputCodeBlock_Python"></block>
+      <block type="valueNoOutputCodeBlock_Python"></block>
     </category>
     <category name="LOGIC" colour="%{BKY_LOGIC_HUE}">
       <block type="controls_if"></block>
@@ -1057,7 +1059,7 @@ let toolbox =
           </shadow>
         </value>
       </block>
-      <block type="comprehensionForEach"></block>
+      <block type="comprehensionForEach_Python"></block>
       <block type="controls_forEach"></block>
       <block type="controls_flow_statements"></block>
     </category>
@@ -1288,7 +1290,7 @@ let toolbox =
           </block>
         </value>
       </block>
-      <block type="indexer"></block>
+      <block type="indexer_Python"></block>
       <block type="lists_split">
         <value name="DELIM">
           <shadow type="text">
@@ -1297,13 +1299,13 @@ let toolbox =
         </value>
       </block>
       <block type="lists_sort"></block>
-      <block type="setBlock"></block>
-      <block type="sortedBlock"></block>
-      <block type="zipBlock"></block>
-      <block type="dictBlock"></block>
-      <block type="tupleBlock"></block>
-      <block type="tupleConstructorBlock"></block>
-      <block type="reversedBlock"></block>
+      <block type="setBlock_Python"></block>
+      <block type="sortedBlock_Python"></block>
+      <block type="zipBlock_Python"></block>
+      <block type="dictBlock_Python"></block>
+      <block type="tupleBlock_Python"></block>
+      <block type="tupleConstructorBlock_Python"></block>
+      <block type="reversedBlock_Python"></block>
     </category>
     <category name="COLOUR" colour="%{BKY_COLOUR_HUE}">
       <block type="colour_picker"></block>
@@ -1344,26 +1346,26 @@ let toolbox =
       </block>Conversion
     </category>
     <category name="CONVERSION" colour="120">
-      <block type="boolConversion">
+      <block type="boolConversion_Python">
       </block>
-      <block type="intConversion">
+      <block type="intConversion_Python">
       </block>
-      <block type="floatConversion">
+      <block type="floatConversion_Python">
       </block>
-      <block type="strConversion">
+      <block type="strConversion_Python">
       </block>
     </category>
     <category name="I/O" colour="190">
-      <block type="withAs">
+      <block type="withAs_Python">
       </block>
-      <block type="textFromFile">
+      <block type="textFromFile_Python">
         <value name="FILENAME">
           <shadow type="text">
             <field name="TEXT">name of file</field>
           </shadow>
         </value>
       </block>
-      <block type="readFile"></block>
+      <block type="readFile_Python"></block>
     </category>
     <sep></sep>
     <category name="VARIABLES" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
