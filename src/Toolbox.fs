@@ -8,7 +8,6 @@ open Blockly
 open JupyterlabServices.__kernel_messages.KernelMessage
 
 //TODO: 
-// - make "read file" have shadow text block rather than input field
 // - on list comprehension, have a "when" to add filtering conditions
 
 //TODO: ask fable about using jsOptions to define functions
@@ -165,9 +164,12 @@ blockly?Python.["textFromFile_Python"] <- fun (block : Blockly.Block) ->
 blockly?Blocks.["readFile_Python"] <- createObj [
   "init" ==> fun () ->
     Browser.Dom.console.log( "readFile_Python" + " init")
-    thisBlock.appendDummyInput()
+    // thisBlock.appendDummyInput()
+    thisBlock.appendValueInput("FILENAME")
+      .setCheck(!^"String")
       .appendField( !^"read file"  )
-      .appendField( !^(blockly.FieldTextInput.Create("type filename here...") :?> Blockly.Field), "FILENAME"  ) |> ignore
+      // .appendField( !^(blockly.FieldTextInput.Create("type filename here...") :?> Blockly.Field), "FILENAME"  ) 
+      |> ignore
     thisBlock.setOutput(true, !^None)
     thisBlock.setColour(!^230.0)
     thisBlock.setTooltip !^("Use this to read a file. It will output a file, not a string." )
@@ -175,7 +177,8 @@ blockly?Blocks.["readFile_Python"] <- createObj [
   ]
 // Generate Python template code
 blockly?Python.["readFile_Python"] <- fun (block : Blockly.Block) -> 
-  let fileName = block.getFieldValue("FILENAME").Value |> string
+  // let fileName = block.getFieldValue("FILENAME").Value |> string
+  let fileName = blockly?Python?valueToCode( block, "FILENAME", blockly?Python?ORDER_ATOMIC )
   let code = "open('" + fileName + "',encoding='utf-8')"
   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
 
@@ -939,7 +942,43 @@ makeMemberIntellisenseBlock_Python
 
 // Override the dynamic 'Variables' toolbox category initialized in blockly_compressed.js
 // The basic idea here is that as we add vars, we extend the list of vars in the dropdowns in this category
+// NOTE: this gets a little awkward for side by side blockly extensions for different languages, since they both
+// want to overwrite a global function. Instead we let each plugin register a function called when the kernel matches some value
+///This type is shared across extentions so must match everywhere
+type FlyoutRegistryEntry =
+  {
+    ///The name of the language, e.g. Python
+    LanguageName : string
+    ///A function that verifies whether the active kernel matches our language
+    KernelCheckFunction : string -> bool
+    ///A function the implements the flyout categories
+    FlyoutFunction : Blockly.Workspace -> ResizeArray<Element>
+  }
+///This function is shared across extentions so must match everywhere
 blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
+  //check that we have registered a function
+  if blockly?Variables?flyoutRegistry <> null then
+    //get the registry
+    let registry : ResizeArray<FlyoutRegistryEntry> = unbox <| blockly?Variables?flyoutRegistry
+    //get the active kernel
+    match GetKernel() with
+    //If we have an active kernel, find the first match in our KernelCheckFunctions
+    | Some(_,k) -> 
+      let entryOption = registry |> Seq.tryFind( fun e -> e.KernelCheckFunction k.name)
+      match entryOption with
+      //we have a match, route the workspace to the flyout function for this entry
+      | Some(e) -> e.FlyoutFunction(workspace)
+      //no matching entry, return empty
+      | _ -> ResizeArray<Element>()
+    //no kernel, return empty
+    | _ -> ResizeArray<Element>()
+  //no registry, return empty
+  else
+    ResizeArray<Element>()
+
+
+// blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
+let flyoutCategoryBlocks_Python = fun (workspace : Blockly.Workspace) ->
   let variableModelList = workspace.getVariablesOfType("")
   let xmlList = ResizeArray<Element>()
   //Only create variable blocks if a variable has been defined
@@ -962,27 +1001,27 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
       xml.appendChild(shadowBlockDom) |> ignore
       xmlList.Add(xml)
     //switch intellisense blocks in category depending on current kernel
-    let isPython = 
-      match GetKernel() with
-      | Some(_,k) -> k.name.Contains("python")
-      | _ -> false
+    // let isPython = 
+    //   match GetKernel() with
+    //   | Some(_,k) -> k.name.Contains("python")
+    //   | _ -> false
 
     //variable property block
-    if blockly?Blocks?varGetProperty_Python && isPython then
+    if blockly?Blocks?varGetProperty_Python then //&& isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varGetProperty_Python")
       xml.setAttribute("gap", if blockly?Blocks?varGetPropertyPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable method block
-    if blockly?Blocks?varDoMethod_Python  && isPython then
+    if blockly?Blocks?varDoMethod_Python then //&& isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varDoMethod_Python")
       xml.setAttribute("gap", if blockly?Blocks?varDoMethodPython then "20" else "8")
       xml.appendChild( Blockly.variables.generateVariableFieldDom(lastVarFieldXml)) |> ignore
       xmlList.Add(xml)
     //variable create object block
-    if blockly?Blocks?varCreateObject_Python  && isPython then
+    if blockly?Blocks?varCreateObject_Python then //&& isPython then
       let xml = Blockly.Utils.xml.createElement("block") 
       xml.setAttribute("type", "varCreateObject_Python")
       xml.setAttribute("gap", if blockly?Blocks?varCreateObjectPython then "20" else "8")
@@ -1007,6 +1046,26 @@ blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
         xml.appendChild( Blockly.variables.generateVariableFieldDom(variable)) |> ignore
         xmlList.Add(xml)
   xmlList
+
+//create or get the flyout registry
+let registry : ResizeArray<FlyoutRegistryEntry> = 
+  if blockly?Variables?flyoutRegistry = null then
+    ResizeArray<FlyoutRegistryEntry>()
+  else
+    unbox <| blockly?Variables?flyoutRegistry
+
+// register the flyout function
+registry.Add(
+    {
+      LanguageName = "Python"
+      KernelCheckFunction = fun (name:string)-> name.ToLower().Contains("python")
+      FlyoutFunction = flyoutCategoryBlocks_Python
+    }
+  )
+
+//update the registry
+blockly?Variables?flyoutRegistry <- registry
+
 
 
 /// A static toolbox copied from one of Google's online demos at https://blockly-demo.appspot.com/static/demos/index.html
@@ -1365,7 +1424,13 @@ let toolbox =
           </shadow>
         </value>
       </block>
-      <block type="readFile_Python"></block>
+      <block type="readFile_Python">
+              <value name="FILENAME">
+          <shadow type="text">
+            <field name="TEXT">name of file</field>
+          </shadow>
+        </value>
+      </block>
     </category>
     <sep></sep>
     <category name="VARIABLES" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
