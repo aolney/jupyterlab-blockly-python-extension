@@ -1299,13 +1299,13 @@ let toolbox =
           </shadow>
         </value>
       </block>
-      <block type="getInput">
+      <!-- <block type="getInput">
         <value name="x">
           <shadow type="text">
             <field name="TEXT">The prompt shown to the user</field>
           </shadow>
         </value>
-      </block>
+      </block> -->
     </category>
     <category name="LISTS" colour="%{BKY_LISTS_HUE}">
       <block type="lists_create_with">
