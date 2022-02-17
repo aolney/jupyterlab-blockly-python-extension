@@ -160,14 +160,14 @@ blockly?Python.["textFromFile_Python"] <- fun (block : Blockly.Block) ->
   let code = "open(" + fileName + ",encoding='utf-8').read()"
   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
 
-// GENERAL file read block
-blockly?Blocks.["readFile_Python"] <- createObj [
+// GENERAL open file read block
+blockly?Blocks.["openReadFile_Python"] <- createObj [
   "init" ==> fun () ->
-    Browser.Dom.console.log( "readFile_Python" + " init")
+    Browser.Dom.console.log( "openReadFile_Python" + " init")
     // thisBlock.appendDummyInput()
     thisBlock.appendValueInput("FILENAME")
       .setCheck(!^"String")
-      .appendField( !^"read file"  )
+      .appendField( !^"open file for reading"  )
       // .appendField( !^(blockly.FieldTextInput.Create("type filename here...") :?> Blockly.Field), "FILENAME"  ) 
       |> ignore
     thisBlock.setOutput(true, !^None)
@@ -176,11 +176,34 @@ blockly?Blocks.["readFile_Python"] <- createObj [
     thisBlock.setHelpUrl !^"https://docs.python.org/3/tutorial/inputoutput.html"
   ]
 // Generate Python template code
-blockly?Python.["readFile_Python"] <- fun (block : Blockly.Block) -> 
+blockly?Python.["openReadFile_Python"] <- fun (block : Blockly.Block) -> 
   // let fileName = block.getFieldValue("FILENAME").Value |> string
   let fileName = blockly?Python?valueToCode( block, "FILENAME", blockly?Python?ORDER_ATOMIC )
-  let code = "open('" + fileName + "',encoding='utf-8')"
+  let code = "open(" + fileName + ",encoding='utf-8')"
   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
+
+// GENERAL open file write block
+blockly?Blocks.["openWriteFile_Python"] <- createObj [
+  "init" ==> fun () ->
+    Browser.Dom.console.log( "openWriteFile_Python" + " init")
+    // thisBlock.appendDummyInput()
+    thisBlock.appendValueInput("FILENAME")
+      .setCheck(!^"String")
+      .appendField( !^"open file for writing"  )
+      // .appendField( !^(blockly.FieldTextInput.Create("type filename here...") :?> Blockly.Field), "FILENAME"  ) 
+      |> ignore
+    thisBlock.setOutput(true, !^None)
+    thisBlock.setColour(!^230.0)
+    thisBlock.setTooltip !^("Use this to write to a file. It will output a file, not a string." )
+    thisBlock.setHelpUrl !^"https://docs.python.org/3/tutorial/inputoutput.html"
+  ]
+// Generate Python template code
+blockly?Python.["openWriteFile_Python"] <- fun (block : Blockly.Block) -> 
+  // let fileName = block.getFieldValue("FILENAME").Value |> string
+  let fileName = blockly?Python?valueToCode( block, "FILENAME", blockly?Python?ORDER_ATOMIC )
+  let code = "open(" + fileName + ",'w',encoding='utf-8')"
+  [| code; blockly?Python?ORDER_FUNCTION_CALL |]
+
 
 
 /// A template to create arbitrary code blocks (FREESTYLE) in these dimensions: dummy/input; output/nooutput
@@ -330,6 +353,15 @@ makeFunctionBlock_Python
   "Create a dictionary from a list of tuples, e.g. [('a',1),('b',2)...]"
   "https://docs.python.org/3/tutorial/datastructures.html#dictionaries"
   "dict"
+
+// list
+makeFunctionBlock_Python 
+  "listBlock_Python"
+  "list"
+  "None"
+  "Create a list from an iterable, e.g. list(zip(...))"
+  "https://docs.python.org/3/library/stdtypes.html#typesseq-list"
+  "list"
 
 // zip
 makeFunctionBlock_Python 
@@ -1362,6 +1394,7 @@ let toolbox =
       <block type="sortedBlock_Python"></block>
       <block type="zipBlock_Python"></block>
       <block type="dictBlock_Python"></block>
+      <block type="listBlock_Python"></block>
       <block type="tupleBlock_Python"></block>
       <block type="tupleConstructorBlock_Python"></block>
       <block type="reversedBlock_Python"></block>
@@ -1424,7 +1457,14 @@ let toolbox =
           </shadow>
         </value>
       </block>
-      <block type="readFile_Python">
+      <block type="openReadFile_Python">
+              <value name="FILENAME">
+          <shadow type="text">
+            <field name="TEXT">name of file</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="openWriteFile_Python">
               <value name="FILENAME">
           <shadow type="text">
             <field name="TEXT">name of file</field>
