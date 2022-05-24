@@ -243,6 +243,44 @@ makeCodeBlock_Python "dummyNoOutputCodeBlock_Python" false false
 makeCodeBlock_Python "valueOutputCodeBlock_Python" true true
 makeCodeBlock_Python "valueNoOutputCodeBlock_Python" true false
 
+/// A template to create arbitrary COMMENT blocks in these dimensions: dummy/input; output/nooutput
+let makeCommentBlock_Python (blockName:string) (hasInput: bool) (hasOutput: bool) =
+  blockly?Blocks.[blockName] <- createObj [
+    "init" ==> fun () ->
+      let input = if hasInput then thisBlock.appendValueInput("INPUT").setCheck(!^None) else thisBlock.appendDummyInput()
+      Browser.Dom.console.log( blockName + " init")
+      input
+        .appendField( !^"# "  )
+        .appendField( !^(blockly.FieldTextInput.Create("type comment here...") :?> Blockly.Field), "COMMENT"  ) |> ignore
+      if hasOutput then 
+        thisBlock.setOutput(true, !^None)
+      else
+        thisBlock.setNextStatement true
+        thisBlock.setPreviousStatement true
+      thisBlock.setColour(!^230.0)
+      thisBlock.setTooltip !^("You can put any text comment in this block. Use this block if you " + (if hasInput then "do" else "don't") + " need to connect an input block and "+ (if hasOutput then "do" else "don't") + " need to connect an output block." )
+      thisBlock.setHelpUrl !^"https://docs.python.org/3/"
+    ]
+  // Generate Python template code
+  blockly?Python.[blockName] <- fun (block : Blockly.Block) -> 
+    let userCode = block.getFieldValue("COMMENT").Value |> string
+    let code =
+      if hasInput then
+        let input = blockly?Python?valueToCode( block, "INPUT", blockly?Python?ORDER_ATOMIC )
+        (userCode + " " + input).Trim()
+      else 
+        userCode.Trim()
+    if hasOutput then
+      [| code; blockly?Python?ORDER_ATOMIC |] //Assumption is that freestyle should not invoke operator precedence at all
+    else
+      "# " + code + "\n" |> unbox
+
+//Make all varieties of code block
+makeCommentBlock_Python "dummyOutputCommentBlock_Python" false true
+makeCommentBlock_Python "dummyNoOutputCommentBlock_Python" false false
+makeCommentBlock_Python "valueOutputCommentBlock_Python" true true
+makeCommentBlock_Python "valueNoOutputCommentBlock_Python" true false
+
 /// Create a Blockly/Python templated import block: TODO if we make this part of the variable menu, then users will never need to rename variable after using the block
 let makeImportBlock_Python (blockName:string) (labelOne:string) (labelTwo:string)  =
   blockly?Blocks.[ blockName ] <- createObj [
@@ -1114,6 +1152,12 @@ let toolbox =
       <block type="dummyNoOutputCodeBlock_Python"></block>
       <block type="valueOutputCodeBlock_Python"></block>
       <block type="valueNoOutputCodeBlock_Python"></block>
+    </category>
+    <category name="COMMENT" colour="%{BKY_COLOUR_HUE}">
+      <block type="dummyOutputCommentBlock_Python"></block>
+      <block type="dummyNoOutputCommentBlock_Python"></block>
+      <block type="valueOutputCommentBlock_Python"></block>
+      <block type="valueNoOutputCommentBlock_Python"></block>
     </category>
     <category name="LOGIC" colour="%{BKY_LOGIC_HUE}">
       <block type="controls_if"></block>
