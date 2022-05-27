@@ -1,6 +1,6 @@
 # jupyterlab-blockly-python-extension
 
-A [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) extension implementing a Blockly palette for the Python language using [Fable](https://fable.io/) tooling.
+A [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) extension implementing a Blockly palette for the Python language using [Fable](https://fable.io/) tooling. For data science training materials using this extension, see [here](https://github.com/memphis-iis/datawhys-content-notebooks).
 
 **This extension supercedes [the original](https://github.com/aolney/fable-jupyterlab-blockly-extension) by allowing multiple such extensions (e.g. the [R extension](https://github.com/aolney/jupyterlab-blockly-r-extension)) to coexist in parallel.**
 
