@@ -1233,6 +1233,11 @@ module Statedb =
 
     type [<AllowNullLiteral>] IExports =
         abstract StateDB: StateDBStatic
+        abstract IStateDB: Tokens.IStateDB //AO: 2/27/22
+
+    //AO: 2/27/22
+    [<Import("*","@jupyterlab/coreutils")>]
+    let Types : IExports = jsNative
 
     type StateDB =
         StateDB<obj>

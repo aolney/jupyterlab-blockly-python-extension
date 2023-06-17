@@ -46,6 +46,8 @@ let thisObj : obj = jsNative
 // [<Emit("delete $0")>]
 // let delete (o : obj) : unit = jsNative
 
+let  CustomFields : obj = importMember "./SearchDropdown.js"
+
 [<Emit("delete blockly.Python.definitions_")>]
 let deleteDefinitions : unit = jsNative
 
@@ -495,11 +497,98 @@ blockly?Python.["tupleBlock_Python"] <- fun (block : Blockly.Block) ->
   let code = "(" +  firstArg + "," + secondArg + ")" 
   [| code; blockly?Python?ORDER_NONE |]
 
+
+//==== EXPERIMENTAL MUTATOR SECTION ======================================
+/// A mutator for dynamic arguments. A block using this mutator must have a dummy called "EMPTY" and must register this mutator
+// Somewhat bizarrely, thes are not exported by @blockly/block-plus-minus, so we reference local copies
+[<ImportMember("./field_plus.js")>]
+let createPlusField( o: obj): Blockly.FieldImage = jsNative
+[<ImportMember("./field_minus.js")>]
+let createMinusField( o: obj): Blockly.FieldImage = jsNative
+
+let createDynamicArgumentMutator ( mutatorName : string) (startCount : int) (emptyLeadSlotLabel:string) (nonEmptyLeadSlotLabel:string) (additionalSlotLabel : string)= 
+  let mutator = 
+    createObj [
+      "itemCount_" ==> 0
+      "mutationToDom" ==> fun () ->
+        let container = Blockly.utils?xml?createElement("mutation");
+        container?setAttribute("items",thisBlock?itemCount_)
+        container
+      "domToMutation" ==>  fun(xmlElement ) ->
+        let targetCount = System.Int32.Parse(xmlElement?getAttribute("items"))
+        thisBlock?updateShape_(targetCount);
+      "updateShape_" ==>  fun(targetCount) ->
+        while unbox<int>(thisBlock?itemCount_) < targetCount do
+          thisBlock?addPart_();
+        while unbox<int>(thisBlock?itemCount_) > targetCount do
+          thisBlock?removePart_();
+        thisBlock?updateMinus_();
+      "plus" ==>  fun() ->
+        thisBlock?addPart_();
+        thisBlock?updateMinus_();
+      "minus" ==>  fun() ->
+        if thisBlock?itemCount_ <> 0 then
+          thisBlock?removePart_();
+          thisBlock?updateMinus_();
+      "addPart_" ==> fun() ->
+        if thisBlock?itemCount_ = 0 then
+          thisBlock.removeInput("EMPTY");
+          thisBlock?topInput_ <- thisBlock.appendValueInput("ADD" + thisBlock?itemCount_)
+              .appendField(U2.Case2(!!createPlusField() ), "PLUS")
+              //label that goes where "create list with" normally goes
+              .appendField(U2.Case1(nonEmptyLeadSlotLabel)) //|> ignore
+              .setAlign(blockly.ALIGN_RIGHT) //e.g. gets "using" label closer to slot in question
+
+        else
+          thisBlock.appendValueInput("ADD" + thisBlock?itemCount_) //|> ignore
+              //the next two lines affect the label that goes with every additional slot
+              .appendField(U2.Case1(additionalSlotLabel))
+              .setAlign(blockly.ALIGN_RIGHT) |> ignore
+        thisBlock?itemCount_ <- thisBlock?itemCount_ + 1
+      "removePart_" ==> fun() -> 
+        thisBlock?itemCount_ <- thisBlock?itemCount_ - 1
+        thisBlock?removeInput("ADD" + thisBlock?itemCount_);
+        if thisBlock?itemCount_ = 0 then
+          thisBlock?topInput_ <- thisBlock.appendDummyInput("EMPTY")
+              .appendField(U2.Case2(!!createPlusField()), "PLUS")
+              //label that goes where "create empty list" normally goes
+              .appendField(U2.Case1(emptyLeadSlotLabel)) //|> ignore
+      "updateMinus_" ==> fun() ->
+        let minusField = thisBlock.getField("MINUS");
+        if minusField = null && thisBlock?itemCount_ > 0 then
+          thisBlock?topInput_?insertFieldAt(1, createMinusField(), "MINUS");
+        elif minusField <> null && thisBlock?itemCount_ < 1 then
+          thisBlock?topInput_?removeField("MINUS");
+    ]
+
+  let helper() = 
+    thisBlock.getInput("EMPTY").insertFieldAt(0.0, U2.Case2(!!createPlusField()), "PLUS") |> ignore
+    thisBlock?updateShape_(startCount) //|> ignore
+  //register the mutator
+  // let test = createPlusField()
+  // test <> test |> ignore
+  Blockly.extensions.registerMutator( mutatorName, !!mutator, !!helper)
+
+// Create mutator-extended blocks
+/// ORIGINAL APPROACH
+/// Use list mutator like a mixin
+/// Works but not compatible with plus/minus extension
+/// Mixin approach doesn't work with plus/minus extension because that has too much list UI embedded in it
+/// deep clone
+[<Emit("Object.assign({}, $0)")>]
+let clone (x: obj) : obj = jsNative
+
 //TODO: 
 // ? OPTION FOR BOTH POSITION ONLY (PASS IN LIST OF ARGS) AND KEYWORD ARGUMENTS (PASS IN DICTIONARY)
 // generalized incr
 // Dictionary
 // list append, list range
+
+open Thoth.Json 
+
+// //Fable 2 transition : AO 6/17/23 believe this is only needed for workspace caching
+// let inline toJson x = Encode.Auto.toString(4, x)
+// let inline ofJson<'T> json = Decode.Auto.unsafeFromString<'T>(json)
 
 /// An entry for a single name (var/function/whatever)
 type IntellisenseEntry =
@@ -815,6 +904,21 @@ let SafeRemoveField( block:Blockly.Block ) ( fieldName : string ) ( inputName : 
   | _, null ->  Browser.Dom.console.log( "error removing (" + fieldName + ") from block; input (" + inputName + ") does not exist" )
   | _,input -> input.removeField( fieldName )
 
+/// Remove an input safely, even if it doesn't exist
+let SafeRemoveInput( block:Blockly.Block ) ( inputName : string )=
+  match block.getInput(inputName) with
+  | null -> ()  //input doesnt exist, no op
+  | input -> block.removeInput(inputName)
+
+
+// Dynamic argument mutator for intelliblocks
+// NOTE: R version was called 'intelliblockMutator' ; with both plugins loaded we get an 'already loaded' error, so adding '_Python' suffix here
+createDynamicArgumentMutator "intelliblockMutator_Python" 1 "add argument" "using" "and"
+
+// Search dropdown constructor
+[<Emit("new CustomFields.FieldFilter($0, $1, $2)")>] //CustomFields.FieldFilter('', options, this.validate);
+let createSearchDropdown( initialString : string, options : string[], validateFun : System.Func<string,obj> ): Blockly.Field = jsNative
+
 // TODO: MAKE BLOCK THAT ALLOWS USER TO MAKE AN ASSIGNMENT TO A PROPERTY (SETTER)
 // TODO: CHANGE OUTPUT CONNECTOR DEPENDING ON INTELLISENSE: IF FUNCTION DOESN'T HAVE AN OUTPUT, REMOVE CONNECTOR
 /// Make a block that has an intellisense-populated member dropdown. The member type is property or method, defined by the filter function
@@ -862,25 +966,63 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
       let varUserName = thisBlockClosure?varSelectionUserName(thisBlockClosure,selectedVarOption)
       let options = varUserName |> optionsFunction 
 
+      // --------------------------------------------------------------------
+      // Pre-search approach: newMemberSelection is text, e.g. "read.csv"
+      // //use intellisense to populate the member options, also use validator so that when we select a new member from the dropdown, tooltip is updated
+      // input.appendField( !^(blockly.FieldDropdown.Create( options, System.Func<string,obj>( fun newMemberSelection ->
+      //   // Within validator, "this" refers to FieldVariable not block.
+      //   let (thisFieldDropdown : Blockly.FieldDropdown) = !!thisObj
+      //   thisFieldDropdown.setTooltip( !^( getIntellisenseMemberTooltip varUserName newMemberSelection ) )
+      //   //back up the current member selection so it is not lost every time a cell is run; ignore status selections that start with !
+      //   thisBlockClosure?selectedMember <- 
+      //     match newMemberSelection.StartsWith("!"),thisBlock?selectedMember with
+      //     | _, "" -> newMemberSelection 
+      //     | true, _ -> thisBlock?selectedMember
+      //     | false,_ -> newMemberSelection
+
+      //   //back up to XML data if valid
+      //   if varUserName <> "" then
+      //     thisBlockClosure?data <- varUserName + ":" + thisBlockClosure?selectedMember //only set data when at least var name is known
+
+      //   //Since we are leveraging the validator, we return the selected value without modification
+      //   newMemberSelection |> unbox)
+      //   ) :> Blockly.Field), "MEMBER"  ) |> ignore 
+      // ---------------------------------------------------------------------------
+      // Search approach : newMemberSelection is number/index into list of options
+      // ---------------------------------------------------------------------------
+      // Remove extra data from options
+      let flatOptions = options |> Array.map( fun arr -> arr.[0])
       //use intellisense to populate the member options, also use validator so that when we select a new member from the dropdown, tooltip is updated
-      input.appendField( !^(blockly.FieldDropdown.Create( options, System.Func<string,obj>( fun newMemberSelection ->
+      // Restore stored value from XML if it exists
+      let defaultSelection = 
+        let dataString = (thisBlockClosure?data |> string)
+        if dataString.Contains(":") then dataString.Split(':').[1] else ""
+
+      input.appendField( !^createSearchDropdown(defaultSelection, flatOptions,System.Func<string,obj>( fun newMemberSelectionIndex ->
         // Within validator, "this" refers to FieldVariable not block.
-        let (thisFieldDropdown : Blockly.FieldDropdown) = !!thisObj
-        thisFieldDropdown.setTooltip( !^( getIntellisenseMemberTooltip varUserName newMemberSelection ) )
+
+        let (thisSearchDropdown : Blockly.FieldTextInput) = !!thisObj
+        // NOTE: newMemberSelectionIndex is an index into WORDS not INITWORDS
+        // this is weird: the type of newMemberSelectionIndex seems to switch from string to int...
+        let newMemberSelection = 
+          if newMemberSelectionIndex = "" then 
+            defaultSelection
+          else
+            unbox<string[]>(thisSearchDropdown?WORDS).[!!newMemberSelectionIndex] 
+        thisSearchDropdown.setTooltip( !^( getIntellisenseMemberTooltip varUserName newMemberSelection ) )
         //back up the current member selection so it is not lost every time a cell is run; ignore status selections that start with !
         thisBlockClosure?selectedMember <- 
           match newMemberSelection.StartsWith("!"),thisBlock?selectedMember with
           | _, "" -> newMemberSelection 
           | true, _ -> thisBlock?selectedMember
           | false,_ -> newMemberSelection
-
         //back up to XML data if valid
         if varUserName <> "" then
           thisBlockClosure?data <- varUserName + ":" + thisBlockClosure?selectedMember //only set data when at least var name is known
-
         //Since we are leveraging the validator, we return the selected value without modification
         newMemberSelection |> unbox)
-        ) :> Blockly.Field), "MEMBER"  ) |> ignore 
+      ), "MEMBER"  ) |> ignore 
+      // end search approach
 
       //back up to XML data if valide; when the deserialized XML contains data, we should never overwrite it here
       if thisBlockClosure?data = null then
@@ -891,9 +1033,9 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
       memberField.setTooltip( !^( getIntellisenseMemberTooltip varUserName (memberField.getText()) ) )
 
       //add more fields if arguments are needed. Current strategy is to make those their own block rather than adding mutators to this block
-      if hasArgs then
-          input.appendField(!^"using", "USING") |> ignore
-          thisBlockClosure.setInputsInline(true);
+      // if hasArgs then
+      //     input.appendField(!^"using", "USING") |> ignore
+      //     thisBlockClosure.setInputsInline(true);
 
     "init" ==> fun () -> 
       Browser.Dom.console.log( blockName + " init")
@@ -901,7 +1043,10 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
       //If we need to pass "this" into a closure, we rename to work around shadowing
       let thisBlockClosure = thisBlock
 
-      let input = if hasArgs then thisBlock.appendValueInput("INPUT") else thisBlock.appendDummyInput("INPUT")
+      // original (non-mutator) approach
+      // let input = if hasArgs then thisBlock.appendValueInput("INPUT") else thisBlock.appendDummyInput("INPUT")
+      // mutator approach
+      let input = thisBlock.appendDummyInput("INPUT")
       input
         .appendField(!^preposition) 
 
@@ -921,11 +1066,18 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
         // .appendField( !^(blockly.FieldDropdown.Create( thisBlock?varSelectionUserName(thisBlockClosure, None) |> requestAndStubOptions thisBlock ) :> Blockly.Field), "MEMBER"  ) |> ignore 
       thisBlockClosure?updateIntellisense( thisBlockClosure, None, requestAndStubOptions_Python thisBlockClosure) //adds the member fields, triggering intellisense
 
-      if hasArgs then thisBlock.setInputsInline(true)
+      // original (non mutator) approach
+      // if hasArgs then thisBlock.setInputsInline(true)
       thisBlock.setOutput(true)
       thisBlock.setColour !^230.0
       thisBlock.setTooltip !^"!Not defined until you execute code."
       thisBlock.setHelpUrl !^""
+
+      //New mutator approach: must apply mutator on init
+      //SafeRemoveInput thisBlockClosure "EMPTY"
+      if hasArgs then
+        thisBlock.appendDummyInput("EMPTY") |> ignore
+        blockly?Extensions?apply("intelliblockMutator_Python",thisBlock,true)
 
     //Listen for intellisense ready events
     "onchange" ==> fun (e:Blockly.Events.Change) ->
@@ -956,6 +1108,20 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
         let varName = thisBlock?varSelectionUserName(thisBlock, None) //Blockly is pretty good at recovering the variable, so we don't need to get from data
         thisBlock.setTooltip !^( varName |> getIntellisenseVarTooltip )
 
+        //6/17/23
+        // PROBLEM: during drag of intelliblocks, child blocks are offset, typically in tthe direction of movement and typically by an amount proportional to the velocity of movement
+        // suspect the problem is in blocks_dragger.js
+        // various attempted fixes are below
+        //https://groups.google.com/g/blockly/c/C8yx3aVsHbU/m/MeoN1SEnAgAJ
+        // note render/rendered are on blocksvg not block, so unless they are overloaded here, this will not work
+        // if (thisBlock?rendered) then
+        //   thisBlock?render();
+        //   // This may not be necessary, but no harm in adding it.
+        //   thisBlock.bumpNeighbours();
+
+        // if (thisBlock?rendered) then
+        //   thisBlock?initSvg();
+        
         //TODO NOT SOLVING PROBLEM
         //force a block rerender (blocks sometimes "click" but are offset from what they are supposed to be connected to)
         // if thisBlock.outputConnection.targetBlock() <> null then
@@ -965,7 +1131,26 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
         // Blockly.blockSvg.
         ()
     ]
-  /// Generate Python intellisense member block conversion code
+  // Generate Python intellisense member block conversion code
+  // original (non-mutator) approach
+  // blockly?Python.[blockName] <- fun (block : Blockly.Block) -> 
+  //   let varName = blockly?Python?variableDB_?getName( block.getFieldValue("VAR").Value |> string, blockly?Variables?NAME_TYPE);
+  //   let memberName = block.getFieldValue("MEMBER").Value |> string
+  //   // let x = blockly?Python?valueToCode( block, "VAR", blockly?Python?ORDER_ATOMIC )
+  //   let code =  
+  //     //All of the "not defined" option messages start with "!"
+  //     if memberName.StartsWith("!") then
+  //       ""
+  //     else if hasArgs then
+  //       let (args : string) = blockly?Python?valueToCode(block, "INPUT", blockly?Python?ORDER_MEMBER) 
+  //       let cleanArgs = System.Text.RegularExpressions.Regex.Replace(args,"^\[|\]$" , "")
+  //       varName + (if hasDot then "." else "" ) + memberName + "(" +  cleanArgs + ")" 
+  //       // varName + (if hasDot then "." else "" ) + memberName + "(" +  args.Trim([| '['; ']' |]) + ")" //looks like a bug in Fable, brackets not getting trimmed?
+  //     else
+  //       varName + (if hasDot then "." else "" ) + memberName
+  //   [| code; blockly?Python?ORDER_FUNCTION_CALL |]
+
+  //mutator approach
   blockly?Python.[blockName] <- fun (block : Blockly.Block) -> 
     let varName = blockly?Python?variableDB_?getName( block.getFieldValue("VAR").Value |> string, blockly?Variables?NAME_TYPE);
     let memberName = block.getFieldValue("MEMBER").Value |> string
@@ -975,8 +1160,13 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
       if memberName.StartsWith("!") then
         ""
       else if hasArgs then
-        let (args : string) = blockly?Python?valueToCode(block, "INPUT", blockly?Python?ORDER_MEMBER) 
-        let cleanArgs = System.Text.RegularExpressions.Regex.Replace(args,"^\[|\]$" , "")
+        let args : string[] = 
+          [|
+            for i = 0 to block?itemCount_ - 1 do
+              yield  blockly?Python?valueToCode(block, "ADD" + string(i), blockly?Python?ORDER_MEMBER)
+          |]
+        // let cleanArgs = String.concat "," args
+        let cleanArgs = System.Text.RegularExpressions.Regex.Replace( (String.concat "," args) ,"^\[|\]$" , "")
         varName + (if hasDot then "." else "" ) + memberName + "(" +  cleanArgs + ")" 
         // varName + (if hasDot then "." else "" ) + memberName + "(" +  args.Trim([| '['; ']' |]) + ")" //looks like a bug in Fable, brackets not getting trimmed?
       else
@@ -1024,7 +1214,7 @@ type FlyoutRegistryEntry =
     ///A function the implements the flyout categories
     FlyoutFunction : Blockly.Workspace -> ResizeArray<Element>
   }
-///This function is shared across extentions so must match everywhere
+//This function is shared across extentions so must match everywhere
 blockly?Variables?flyoutCategoryBlocks <- fun (workspace : Blockly.Workspace) ->
   //check that we have registered a function
   if blockly?Variables?flyoutRegistry <> null then
@@ -1135,7 +1325,6 @@ registry.Add(
 
 //update the registry
 blockly?Variables?flyoutRegistry <- registry
-
 
 
 /// A static toolbox copied from one of Google's online demos at https://blockly-demo.appspot.com/static/demos/index.html
