@@ -6799,7 +6799,9 @@ module Blockly =
         /// <param name="key">The name to use to look up this function.</param>
         /// <param name="func">The function to
         /// call when the given toolbox category is opened.</param>
-        abstract registerToolboxCategoryCallback: key: string * func: WorkspaceSvg__ClassRegisterToolboxCategoryCallbackFunc -> unit
+        //abstract registerToolboxCategoryCallback: key: string * func: WorkspaceSvg__ClassRegisterToolboxCategoryCallbackFunc -> unit
+        // AO: 3/13/22, ts2fable used delegation syntax
+        abstract registerToolboxCategoryCallback: key: string * func: Func<Blockly.Workspace,ResizeArray<Element>> -> unit
         /// <summary>Get the callback function associated with a given key, for populating
         /// custom toolbox categories in this workspace.</summary>
         /// <param name="key">The name to use to look up the function.</param>
