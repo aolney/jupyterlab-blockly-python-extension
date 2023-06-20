@@ -1165,8 +1165,8 @@ let makeMemberIntellisenseBlock_Python (blockName:string) (preposition:string) (
             for i = 0 to block?itemCount_ - 1 do
               yield  blockly?Python?valueToCode(block, "ADD" + string(i), blockly?Python?ORDER_MEMBER)
           |]
-        // let cleanArgs = String.concat "," args
-        let cleanArgs = System.Text.RegularExpressions.Regex.Replace( (String.concat "," args) ,"^\[|\]$" , "")
+        let cleanArgs = String.concat "," args
+        // let cleanArgs = System.Text.RegularExpressions.Regex.Replace( (String.concat "," args) ,"^\[|\]$" , "") //old list wrapping approach
         varName + (if hasDot then "." else "" ) + memberName + "(" +  cleanArgs + ")" 
         // varName + (if hasDot then "." else "" ) + memberName + "(" +  args.Trim([| '['; ']' |]) + ")" //looks like a bug in Fable, brackets not getting trimmed?
       else
