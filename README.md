@@ -13,7 +13,7 @@ The following query string parameters enable functionality:
 **NOTE: This plugin requires jupyterlab <= 1.2.6, so if you have a higher version (e.g. 2.X) you will need to execute `conda install jupyterlab=1.2.6` or similar for `pip`. The conda environment specification provided in `blockly-extensions.yml` will work as-is (e.g. `mamba env create -f blockly-extensions.yml`) or can be used as a template.**
 
 
-## Installation
+## Installation - v1
 
 ```bash
 jupyter labextension install @aolney/jupyterlab-blockly-python-extension
