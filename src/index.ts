@@ -466,7 +466,7 @@ async function activate(app: JupyterFrontEnd, palette: ICommandPalette, notebook
 };
 
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab-apod',
+  id: '@aolney/jupyterlab-blockly-python-extension:plugin',
   description: 'blockly extension for jupyter lab.',
   autoStart: true,
   requires: [ICommandPalette, INotebookTracker, ILayoutRestorer],
