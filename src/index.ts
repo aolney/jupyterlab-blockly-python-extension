@@ -93,8 +93,19 @@ class BlocklyWidget extends Widget {
     const this$: BlocklyWidget = this;
     BlocklyWidget__set_workspace_Z1D3C0780(this$, Blockly.inject("blocklyDivPython", {
       toolbox: toolbox,
-  }));
-  console.log("jupyterlab_blockly_extension_python: blockly palette initialized");
+    }));
+    console.log("jupyterlab_blockly_extension_python: blockly palette initialized");
+    const logListener = (e: Blockly.Events.Abstract): void => {
+      if (e.type === "create") {
+          BlocklyWidget__set_blocksRendered_Z1FBCCD16(this$, false);
+      }
+      if (e.type === "finished_loading") {
+          BlocklyWidget__set_blocksRendered_Z1FBCCD16(this$, true);
+      }
+      //LogToServer(BlocklyLogEntry082720_Create<Blockly.Events.BlockBase>(e.type, e));
+    }
+    BlocklyWidget__get_workspace(this$).removeChangeListener(logListener);
+    BlocklyWidget__get_workspace(this$).addChangeListener(logListener);
   }
   onResize = (msg: Widget.ResizeMessage): void => {
     let copyOfStruct: number = msg.width;
@@ -193,6 +204,8 @@ export function BlocklyWidget__get_onActiveCellChanged(this$: BlocklyWidget): (a
         }
       }
       if (isChecked(syncCheckbox) && this$.notebooks.activeCell) {
+        console.log("BlocklyWidget__get_blocksRendered(this$):")
+        console.log(BlocklyWidget__get_blocksRendered(this$))
         if (BlocklyWidget__get_blocksRendered(this$) && BlocklyWidget__ActiveCellSerializedBlocksWorkspaceOption(this$) == null) {
           BlocklyWidget__clearBlocks(this$);
         }
@@ -266,6 +279,7 @@ export function BlocklyWidget__RenderBlocks(this$: BlocklyWidget): void {
     try {
       if(xmlStringOption && xmlStringOption[1]){
         const xmlString: string = xmlStringOption[1];
+        BlocklyWidget__clearBlocks(this$);
         decodeWorkspace(xmlString);
         // LogToServer(JupyterLogEntry082720_Create("xml-to-blocks", xmlString));
       }
@@ -400,16 +414,13 @@ export function onNotebookChanged(this: any, sender: IWidgetTracker<NotebookPane
 
 
 export const runCommandOnNotebookChanged = (app: JupyterFrontEnd, sender: IWidgetTracker<NotebookPanel>, args: NotebookPanel | null): boolean => {
-  const appContext = app;
-  // const matchValue: Option<NotebookPanel> = sender.currentWidget;
-  
+  const appContext = app;  
   const matchValue = sender.currentWidget;
   if (matchValue == null) {
   }
   else {
-      // const notebook: NotebookPanel = matchValue;
-      console.log("jupyterlab_blockly_extension_python: notebook changed, autorunning blockly python command");
-      appContext.commands.execute("blockly_python:open");
+    console.log("jupyterlab_blockly_extension_python: notebook changed, autorunning blockly python command");
+    appContext.commands.execute("blockly_python:open");
   }
   return true;
 };
