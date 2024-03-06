@@ -1,17 +1,12 @@
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python';
-
 import { NotebookPanel, INotebookTracker } from "@jupyterlab/notebook";
 import { Kernel, KernelMessage } from "@jupyterlab/services";
-
 import * as rendermime from "@jupyterlab/rendermime";
 import { IRenderMime, MimeModel } from "@jupyterlab/rendermime";
-
-
 import { createMinusField } from "./field_minus.js";
 import { createPlusField } from "./field_plus.js";
 import { CustomFields as CustomFields_1 } from "./SearchDropdown.js";
-
 
 export const CustomFields: any = CustomFields_1;
 
@@ -50,7 +45,7 @@ export function decodeWorkspace(xmlText: string): void {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
   const xmlElement = xmlDoc.documentElement;
-  Blockly.Xml.clearWorkspaceAndLoadFromXml(xmlElement, Blockly.getMainWorkspace() as Blockly.WorkspaceSvg);
+  Blockly.Xml.domToWorkspace(xmlElement, Blockly.getMainWorkspace() as Blockly.WorkspaceSvg);
 }
 
 Blockly.Blocks["comprehensionForEach_Python"]={
@@ -72,16 +67,16 @@ pythonGenerator["comprehensionForEach_Python"]=((block: Blockly.Block): string[]
 
 Blockly.Blocks["withAs_Python"]={
   init: function() {
-      console.log("withAs_Python init");
-      this.appendValueInput("EXPRESSION").setCheck(null).appendField("with");
-      this.appendDummyInput().appendField("as").appendField(new Blockly.FieldVariable("item") as Blockly.Field, "TARGET");
-      this.appendStatementInput("SUITE").setCheck(null);
-      this.setNextStatement(true);
-      this.setPreviousStatement(true);
-      // const value_3: any = this.setInputsInline(true);
-      this.setColour(230);
-      this.setTooltip("Use this to open resources (usually file-type) in a way that automatically handles errors and disposes of them when done. May not be supported by all libraries.");
-      this.setHelpUrl("https://docs.python.org/3/reference/compound_stmts.html#with");
+    console.log("withAs_Python init");
+    this.appendValueInput("EXPRESSION").setCheck(null).appendField("with");
+    this.appendDummyInput().appendField("as").appendField(new Blockly.FieldVariable("item") as Blockly.Field, "TARGET");
+    this.appendStatementInput("SUITE").setCheck(null);
+    this.setNextStatement(true);
+    this.setPreviousStatement(true);
+    // const value_3: any = this.setInputsInline(true);
+    this.setColour(230);
+    this.setTooltip("Use this to open resources (usually file-type) in a way that automatically handles errors and disposes of them when done. May not be supported by all libraries.");
+    this.setHelpUrl("https://docs.python.org/3/reference/compound_stmts.html#with");
   },
 };
 pythonGenerator["withAs_Python"]=((block: Blockly.Block): string => {
@@ -94,24 +89,24 @@ pythonGenerator["withAs_Python"]=((block: Blockly.Block): string => {
 
 Blockly.Blocks["textFromFile_Python"]={
   init: function() {
-      console.log("textFromFile_Python init");
-      this.appendValueInput("FILENAME").setCheck("String").appendField("read text from file");
-      this.setOutput(true, null);
-      this.setColour(230);
-      this.setTooltip("Use this to read a text file. It will output a string.");
-      this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
+    console.log("textFromFile_Python init");
+    this.appendValueInput("FILENAME").setCheck("String").appendField("read text from file");
+    this.setOutput(true, null);
+    this.setColour(230);
+    this.setTooltip("Use this to read a text file. It will output a string.");
+    this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
   },
 };
 pythonGenerator["textFromFile_Python"]=((block: Blockly.Block): string[] => [("open(" + (pythonGenerator.valueToCode(block, "FILENAME", pythonGenerator.ORDER_ATOMIC))) + ",encoding=\'utf-8\').read()", pythonGenerator.ORDER_FUNCTION_CALL]);
 
 Blockly.Blocks["openReadFile_Python"]={
   init: function() {
-      console.log("openReadFile_Python init");
-      this.appendValueInput("FILENAME").setCheck("String").appendField("open file for reading");
-      this.setOutput(true, null);
-      this.setColour(230);
-      this.setTooltip("Use this to read a file. It will output a file, not a string.");
-      this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
+    console.log("openReadFile_Python init");
+    this.appendValueInput("FILENAME").setCheck("String").appendField("open file for reading");
+    this.setOutput(true, null);
+    this.setColour(230);
+    this.setTooltip("Use this to read a file. It will output a file, not a string.");
+    this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
   },
 };
 
@@ -119,12 +114,12 @@ pythonGenerator["openReadFile_Python"]=((block: Blockly.Block): string[] => [("o
 
 Blockly.Blocks["openWriteFile_Python"]={
   init: function() {
-      console.log("openWriteFile_Python init");
-      this.appendValueInput("FILENAME").setCheck("String").appendField("open file for writing");
-      this.setOutput(true, null);
-      this.setColour(230);
-      this.setTooltip("Use this to write to a file. It will output a file, not a string.");
-      this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
+    console.log("openWriteFile_Python init");
+    this.appendValueInput("FILENAME").setCheck("String").appendField("open file for writing");
+    this.setOutput(true, null);
+    this.setColour(230);
+    this.setTooltip("Use this to write to a file. It will output a file, not a string.");
+    this.setHelpUrl("https://docs.python.org/3/tutorial/inputoutput.html");
   },
 };
 
@@ -175,33 +170,33 @@ makeCodeBlock_Python("valueNoOutputCodeBlock_Python", true, false);
  */
 export function makeCommentBlock_Python(blockName: string, hasInput: boolean, hasOutput: boolean): void {
   Blockly.Blocks[blockName]={
-      init: function() {
-          const input: Blockly.Input = hasInput ? this.appendValueInput("INPUT").setCheck(null) : this.appendDummyInput();
-          console.log(blockName + " init");
-          input.appendField("# ").appendField(new Blockly.FieldTextInput("type comment here...") as Blockly.Field, "COMMENT");
-          if (hasOutput) {
-              this.setOutput(true, null);
-          }
-          else {
-              this.setNextStatement(true);
-              this.setPreviousStatement(true);
-          }
-          this.setColour(230);
-          this.setTooltip(((("You can put any text comment in this block. Use this block if you " + (hasInput ? "do" : "don\'t")) + " need to connect an input block and ") + (hasOutput ? "do" : "don\'t")) + " need to connect an output block.");
-          this.setHelpUrl("https://docs.python.org/3/");
-      },
-  };
-  pythonGenerator[blockName]=((block: Blockly.Block): string[] | string => {
-      const userCode: string = block.getFieldValue("COMMENT").toString();
-      let code: string;
-      if (hasInput) {
-          const input_1: string = pythonGenerator.valueToCode(block, "INPUT", pythonGenerator.ORDER_ATOMIC);
-          code = (("# " + userCode + " ") + input_1).trim();
+    init: function() {
+      const input: Blockly.Input = hasInput ? this.appendValueInput("INPUT").setCheck(null) : this.appendDummyInput();
+      console.log(blockName + " init");
+      input.appendField("# ").appendField(new Blockly.FieldTextInput("type comment here...") as Blockly.Field, "COMMENT");
+      if (hasOutput) {
+        this.setOutput(true, null);
       }
       else {
-          code = "# " + userCode.trim();
+        this.setNextStatement(true);
+        this.setPreviousStatement(true);
       }
-      return hasOutput ? [code, pythonGenerator.ORDER_ATOMIC] : (code + "\n");
+      this.setColour(230);
+      this.setTooltip(((("You can put any text comment in this block. Use this block if you " + (hasInput ? "do" : "don\'t")) + " need to connect an input block and ") + (hasOutput ? "do" : "don\'t")) + " need to connect an output block.");
+      this.setHelpUrl("https://docs.python.org/3/");
+    },
+  };
+  pythonGenerator[blockName]=((block: Blockly.Block): string[] | string => {
+    const userCode: string = block.getFieldValue("COMMENT").toString();
+    let code: string;
+    if (hasInput) {
+      const input_1: string = pythonGenerator.valueToCode(block, "INPUT", pythonGenerator.ORDER_ATOMIC);
+      code = (("# " + userCode + " ") + input_1).trim();
+    }
+    else {
+      code = "# " + userCode.trim();
+    }
+    return hasOutput ? [code, pythonGenerator.ORDER_ATOMIC] : (code + "\n");
   });
 }
 
@@ -215,14 +210,14 @@ makeCommentBlock_Python("valueNoOutputCommentBlock_Python", true, false);
  */
 export function makeImportBlock_Python(blockName: string, labelOne: string, labelTwo: string): void {
   Blockly.Blocks[blockName]={
-      init: function() {
-          this.appendDummyInput().appendField(labelOne).appendField(new Blockly.FieldTextInput("some library") as Blockly.Field, "libraryName").appendField(labelTwo).appendField(new Blockly.FieldVariable("variable name") as Blockly.Field, "libraryAlias");
-          this.setNextStatement(true);
-          this.setPreviousStatement(true);
-          this.setColour(230);
-          this.setTooltip("Import a python package to access functions in that package");
-          this.setHelpUrl("https://docs.python.org/3/reference/import.html");
-      },
+    init: function() {
+      this.appendDummyInput().appendField(labelOne).appendField(new Blockly.FieldTextInput("some library") as Blockly.Field, "libraryName").appendField(labelTwo).appendField(new Blockly.FieldVariable("variable name") as Blockly.Field, "libraryAlias");
+      this.setNextStatement(true);
+      this.setPreviousStatement(true);
+      this.setColour(230);
+      this.setTooltip("Import a python package to access functions in that package");
+      this.setHelpUrl("https://docs.python.org/3/reference/import.html");
+    },
   };
   pythonGenerator[blockName]=((block: Blockly.Block): string => (((((((labelOne + " ") + block.getFieldValue("libraryName")) + " ") + labelTwo) + " ") + (pythonGenerator.getVariableName(block.getFieldValue("libraryAlias")))) + "\n"));
 }
@@ -232,13 +227,13 @@ makeImportBlock_Python("importFrom_Python", "from", "import");
 
 Blockly.Blocks["indexer_Python"]={
   init: function() {
-      this.appendValueInput("INDEX").appendField(new Blockly.FieldVariable("{dictVariable}") as Blockly.Field, "VAR").appendField("[");
-      this.appendDummyInput().appendField("]");
-      this.setInputsInline(true);
-      this.setOutput(true);
-      this.setColour(230);
-      this.setTooltip("Gets an item from the variable at a given index. Not supported for all variables.");
-      this.setHelpUrl("https://docs.python.org/3/reference/datamodel.html#object.__getitem__");
+    this.appendValueInput("INDEX").appendField(new Blockly.FieldVariable("{dictVariable}") as Blockly.Field, "VAR").appendField("[");
+    this.appendDummyInput().appendField("]");
+    this.setInputsInline(true);
+    this.setOutput(true);
+    this.setColour(230);
+    this.setTooltip("Gets an item from the variable at a given index. Not supported for all variables.");
+    this.setHelpUrl("https://docs.python.org/3/reference/datamodel.html#object.__getitem__");
   },
 };
 
@@ -250,15 +245,15 @@ pythonGenerator["indexer_Python"]=((block: Blockly.Block): string[] => [(((pytho
 
 export function makeFunctionBlock_Python(blockName: string, label: string, outputType: string, tooltip: string, helpurl: string, functionStr: string): void {
   Blockly.Blocks[blockName]={
-      init: function() {
-          console.log(blockName + " init");
-          this.appendValueInput("x").setCheck(null).appendField(label);
-          this.setInputsInline(true);
-          this.setOutput(true, outputType);
-          this.setColour(230);
-          this.setTooltip(tooltip);
-          this.setHelpUrl(helpurl);
-      },
+    init: function() {
+      console.log(blockName + " init");
+      this.appendValueInput("x").setCheck(null).appendField(label);
+      this.setInputsInline(true);
+      this.setOutput(true, outputType);
+      this.setColour(230);
+      this.setTooltip(tooltip);
+      this.setHelpUrl(helpurl);
+    },
   };
   pythonGenerator[blockName]=((block: Blockly.Block): string[] => [
     ((functionStr + "(") + pythonGenerator.valueToCode(block, "x", pythonGenerator.ORDER_MEMBER).replace("^\\[|\\]$", "")) + ")", pythonGenerator.ORDER_FUNCTION_CALL]);
@@ -279,14 +274,14 @@ makeFunctionBlock_Python("getInput_Python", "input", "String", "Present the give
 
 Blockly.Blocks["tupleBlock_Python"]={
   init: function() {
-      this.appendValueInput("FIRST").setCheck(null).appendField("(");
-      this.appendValueInput("SECOND").setCheck(null).appendField(",");
-      this.appendDummyInput().appendField(")");
-      this.setInputsInline(true);
-      this.setOutput(true, null);
-      this.setColour(230);
-      this.setTooltip("Use this to create a two-element tuple");
-      this.setHelpUrl("https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences");
+    this.appendValueInput("FIRST").setCheck(null).appendField("(");
+    this.appendValueInput("SECOND").setCheck(null).appendField(",");
+    this.appendDummyInput().appendField(")");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(230);
+    this.setTooltip("Use this to create a two-element tuple");
+    this.setHelpUrl("https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences");
   },
 };
 
@@ -363,10 +358,10 @@ export class IntellisenseEntry{
   readonly isFunction: boolean;
   readonly isClass: boolean;
   constructor(Name: string, Info: string, isFunction: boolean, isClass: boolean) {
-      this.Name = Name;
-      this.Info = Info;
-      this.isFunction = isFunction;
-      this.isClass = isClass;
+    this.Name = Name;
+    this.Info = Info;
+    this.isFunction = isFunction;
+    this.isClass = isClass;
   }
 }
 
@@ -374,18 +369,18 @@ export class IntellisenseVariable{
   readonly VariableEntry: IntellisenseEntry;
   readonly ChildEntries: IntellisenseEntry[];
   constructor(VariableEntry: IntellisenseEntry, ChildEntries: IntellisenseEntry[]) {
-      this.VariableEntry = VariableEntry;
-      this.ChildEntries = ChildEntries;
+    this.VariableEntry = VariableEntry;
+    this.ChildEntries = ChildEntries;
   }
 }
 
 
 let notebooksInstance: INotebookTracker | null = null;
 export function setNotebooksInstance(notebooks: INotebookTracker) {
-    notebooksInstance = notebooks;
+  notebooksInstance = notebooks;
 };
 export function getNotebooksInstance(): INotebookTracker | null {
-    return notebooksInstance;
+  return notebooksInstance;
 };
 
 export function GetKernel(): [NotebookPanel, Kernel.IKernelConnection] | undefined {
@@ -632,15 +627,15 @@ export function getIntellisenseMemberTooltip(varName: string, memberName: string
   const matchValue: [boolean, IntellisenseVariable | null | undefined] = tryGetValue(intellisenseLookup, varName, null);
 
   if (matchValue[0]) {
-      const matchValueChild: IntellisenseEntry | undefined = matchValue[1]?.ChildEntries.find(c => c.Name === memberName);
+    const matchValueChild: IntellisenseEntry | undefined = matchValue[1]?.ChildEntries.find(c => c.Name === memberName);
 
-      if (matchValueChild == null) {
-          return "!Not defined until you execute code.";
-      } else {
-          return matchValueChild.Info;
-      }
-  } else {
+    if (matchValueChild == null) {
       return "!Not defined until you execute code.";
+    } else {
+      return matchValueChild.Info;
+    }
+  } else {
+    return "!Not defined until you execute code.";
   }
 }
 
@@ -656,11 +651,10 @@ export function UpdateAllIntellisense_Python(): void {
   blocks.forEach((block: any) => {
     block.updateIntellisense(block, null, ((varName: string): string[][] => requestAndStubOptions_Python(block, varName)));
   });
-  
-  (workspace as Blockly.WorkspaceSvg).registerToolboxCategoryCallback(
-    'VARIABLE', flyoutCategoryBlocks_Python);
-}
 
+  (workspace as Blockly.WorkspaceSvg).registerToolboxCategoryCallback(
+    'VARIABLE', Blockly.Variables.flyoutCategoryBlocks);
+}
 
 /**
  * Remove a field from a block safely, even if it doesn't exist
@@ -668,13 +662,12 @@ export function UpdateAllIntellisense_Python(): void {
 export function SafeRemoveField(block: Blockly.Block, fieldName: string, inputName: string): void {
   const matchValue: Blockly.Field | null = block.getField(fieldName);
   const matchValue_1: Blockly.Input | null = block.getInput(inputName);
-  if (!matchValue) {
-  }
+  if (!matchValue) {}
   else if (!matchValue_1) {
-      console.log(((("error removing (" + fieldName) + ") from block; input (") + inputName) + ") does not exist");
+    console.log(((("error removing (" + fieldName) + ") from block; input (") + inputName) + ") does not exist");
   }
   else {
-      matchValue_1.removeField(fieldName);
+    matchValue_1.removeField(fieldName);
   }
 }
 
@@ -682,10 +675,9 @@ export function SafeRemoveField(block: Blockly.Block, fieldName: string, inputNa
 * Remove an input safely, even if it doesn't exist
 */
 export function SafeRemoveInput(block: Blockly.Block, inputName: string): void {
-  if (!block.getInput(inputName)) {
-  }
+  if (!block.getInput(inputName)) {}
   else {
-      block.removeInput(inputName);
+    block.removeInput(inputName);
   }
 }
 
@@ -812,14 +804,43 @@ makeMemberIntellisenseBlock_Python("varGetProperty_Python", "from", "get", (ie: 
 makeMemberIntellisenseBlock_Python("varDoMethod_Python", "with", "do", (ie: IntellisenseEntry): boolean => ie.isFunction, true, true);
 makeMemberIntellisenseBlock_Python("varCreateObject_Python", "with", "create", (ie: IntellisenseEntry): boolean => ie.isClass, true, true);
 
-export function flyoutCategoryBlocks_Python(workspace: Blockly.WorkspaceSvg): Element[] {
+
+export class FlyoutRegistryEntry{
+  readonly LanguageName: string;
+  readonly KernelCheckFunction: ((arg0: string) => boolean);
+  readonly FlyoutFunction: ((arg0: Blockly.Workspace) => Element[]);
+  constructor(LanguageName: string, KernelCheckFunction: ((arg0: string) => boolean), FlyoutFunction: ((arg0: Blockly.Workspace) => Element[])) {
+    this.LanguageName = LanguageName;
+    this.KernelCheckFunction = KernelCheckFunction;
+    this.FlyoutFunction = FlyoutFunction;
+  }
+}
+export const registry: FlyoutRegistryEntry[] = [];
+
+Blockly.Variables.flyoutCategoryBlocks = ((workspace: Blockly.Workspace): Element[] => {
+
+  if(registry){
+    const matchValue: [NotebookPanel, Kernel.IKernelConnection] | undefined = GetKernel();
+    if (matchValue) {
+      const k: Kernel.IKernelConnection = matchValue[1];
+      const entryOption = registry.find(e => e.KernelCheckFunction(k.name));
+      return entryOption ? entryOption.FlyoutFunction(workspace) : [];
+    }else {
+      return [];
+    }
+  } else{
+    return [];
+  }
+});
+
+export function flyoutCategoryBlocks_Python(workspace: Blockly.Workspace): Element[] {
   const variableModelList: Blockly.VariableModel[] = workspace.getVariablesOfType("");
   const xmlList: Element[] = [];
   
   const button = document.createElement('button');
   button.setAttribute('text', '%{BKY_NEW_VARIABLE}');
   button.setAttribute('callbackKey', 'CREATE_VARIABLE');
-  workspace.registerButtonCallback('CREATE_VARIABLE', function (button) {
+  (workspace as Blockly.WorkspaceSvg).registerButtonCallback('CREATE_VARIABLE', function (button) {
     Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
   });
   xmlList.push(button);
@@ -876,7 +897,10 @@ export function flyoutCategoryBlocks_Python(workspace: Blockly.WorkspaceSvg): El
       }
     }
   }
+
   return xmlList; 
 }
+
+registry.push(new FlyoutRegistryEntry("Python", (name: string): boolean => (name.toLocaleLowerCase().indexOf("python") >= 0), flyoutCategoryBlocks_Python));
 
 export const toolbox = "<xml xmlns=\"https://developers.google.com/blockly/xml\" id=\"toolbox\" style=\"display: none\">\n    <category name=\"IMPORT\" colour=\"255\">\n      <block type=\"importAs_Python\"></block>\n      <block type=\"importFrom_Python\"></block>\n    </category>\n    <category name=\"FREESTYLE\" colour=\"290\">\n      <block type=\"dummyOutputCodeBlock_Python\"></block>\n      <block type=\"dummyNoOutputCodeBlock_Python\"></block>\n      <block type=\"valueOutputCodeBlock_Python\"></block>\n      <block type=\"valueNoOutputCodeBlock_Python\"></block>\n    </category>\n    <category name=\"COMMENT\" colour=\"%{BKY_COLOUR_HUE}\">\n      <block type=\"dummyOutputCommentBlock_Python\"></block>\n      <block type=\"dummyNoOutputCommentBlock_Python\"></block>\n      <block type=\"valueOutputCommentBlock_Python\"></block>\n      <block type=\"valueNoOutputCommentBlock_Python\"></block>\n    </category>\n    <category name=\"LOGIC\" colour=\"%{BKY_LOGIC_HUE}\">\n      <block type=\"controls_if\"></block>\n      <block type=\"logic_compare\"></block>\n      <block type=\"logic_operation\"></block>\n      <block type=\"logic_negate\"></block>\n      <block type=\"logic_boolean\"></block>\n      <block type=\"logic_null\"></block>\n      <block type=\"logic_ternary\"></block>\n    </category>\n    <category name=\"LOOPS\" colour=\"%{BKY_LOOPS_HUE}\">\n      <block type=\"controls_repeat_ext\">\n        <value name=\"TIMES\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">10</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"controls_whileUntil\"></block>\n      <block type=\"controls_for\">\n        <value name=\"FROM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n        <value name=\"TO\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">10</field>\n          </shadow>\n        </value>\n        <value name=\"BY\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"comprehensionForEach_Python\"></block>\n      <block type=\"controls_forEach\"></block>\n      <block type=\"controls_flow_statements\"></block>\n    </category>\n    <category name=\"MATH\" colour=\"%{BKY_MATH_HUE}\">\n      <block type=\"math_number\">\n        <field name=\"NUM\">123</field>\n      </block>\n      <block type=\"math_arithmetic\">\n        <value name=\"A\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n        <value name=\"B\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_single\">\n        <value name=\"NUM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">9</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_trig\">\n        <value name=\"NUM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">45</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_constant\"></block>\n      <block type=\"math_number_property\">\n        <value name=\"NUMBER_TO_CHECK\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">0</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_round\">\n        <value name=\"NUM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">3.1</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_on_list\"></block>\n      <block type=\"math_modulo\">\n        <value name=\"DIVIDEND\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">64</field>\n          </shadow>\n        </value>\n        <value name=\"DIVISOR\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">10</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_constrain\">\n        <value name=\"VALUE\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">50</field>\n          </shadow>\n        </value>\n        <value name=\"LOW\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n        <value name=\"HIGH\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">100</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_random_int\">\n        <value name=\"FROM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n        <value name=\"TO\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">100</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"math_random_float\"></block>\n      <block type=\"math_atan2\">\n        <value name=\"X\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n        <value name=\"Y\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">1</field>\n          </shadow>\n        </value>\n      </block>\n    </category>\n    <category name=\"TEXT\" colour=\"%{BKY_TEXTS_HUE}\">\n      <block type=\"text\"></block>\n      <block type=\"text_join\"></block>\n      <block type=\"text_append\">\n        <value name=\"TEXT\">\n          <shadow type=\"text\"></shadow>\n        </value>\n      </block>\n      <block type=\"text_length\">\n        <value name=\"VALUE\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_isEmpty\">\n        <value name=\"VALUE\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\"></field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_indexOf\">\n        <value name=\"VALUE\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{textVariable}</field>\n          </block>\n        </value>\n        <value name=\"FIND\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_charAt\">\n        <value name=\"VALUE\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{textVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"text_getSubstring\">\n        <value name=\"STRING\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{textVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"text_changeCase\">\n        <value name=\"TEXT\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_trim\">\n        <value name=\"TEXT\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_print\">\n        <value name=\"TEXT\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"text_prompt_ext\">\n        <value name=\"TEXT\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">abc</field>\n          </shadow>\n        </value>\n      </block>\n      <!-- <block type=\"getInput\">\n        <value name=\"x\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">The prompt shown to the user</field>\n          </shadow>\n        </value>\n      </block> -->\n    </category>\n    <category name=\"LISTS\" colour=\"%{BKY_LISTS_HUE}\">\n      <block type=\"lists_create_with\">\n        <mutation items=\"0\"></mutation>\n      </block>\n      <block type=\"lists_create_with\"></block>\n      <block type=\"lists_repeat\">\n        <value name=\"NUM\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">5</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"lists_length\"></block>\n      <block type=\"lists_isEmpty\"></block>\n      <block type=\"lists_indexOf\">\n        <value name=\"VALUE\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{listVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"lists_getIndex\">\n        <value name=\"VALUE\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{listVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"lists_setIndex\">\n        <value name=\"LIST\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{listVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"lists_getSublist\">\n        <value name=\"LIST\">\n          <block type=\"variables_get\">\n            <field name=\"VAR\">{listVariable}</field>\n          </block>\n        </value>\n      </block>\n      <block type=\"indexer_Python\"></block>\n      <block type=\"lists_split\">\n        <value name=\"DELIM\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">,</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"lists_sort\"></block>\n      <block type=\"setBlock_Python\"></block>\n      <block type=\"sortedBlock_Python\"></block>\n      <block type=\"zipBlock_Python\"></block>\n      <block type=\"dictBlock_Python\"></block>\n      <block type=\"listBlock_Python\"></block>\n      <block type=\"tupleBlock_Python\"></block>\n      <block type=\"tupleConstructorBlock_Python\"></block>\n      <block type=\"reversedBlock_Python\"></block>\n    </category>\n    <category name=\"COLOUR\" colour=\"%{BKY_COLOUR_HUE}\">\n      <block type=\"colour_picker\"></block>\n      <block type=\"colour_random\"></block>\n      <block type=\"colour_rgb\">\n        <value name=\"RED\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">100</field>\n          </shadow>\n        </value>\n        <value name=\"GREEN\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">50</field>\n          </shadow>\n        </value>\n        <value name=\"BLUE\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">0</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"colour_blend\">\n        <value name=\"COLOUR1\">\n          <shadow type=\"colour_picker\">\n            <field name=\"COLOUR\">#ff0000</field>\n          </shadow>\n        </value>\n        <value name=\"COLOUR2\">\n          <shadow type=\"colour_picker\">\n            <field name=\"COLOUR\">#3333ff</field>\n          </shadow>\n        </value>\n        <value name=\"RATIO\">\n          <shadow type=\"math_number\">\n            <field name=\"NUM\">0.5</field>\n          </shadow>\n        </value>\n      </block>Conversion\n    </category>\n    <category name=\"CONVERSION\" colour=\"120\">\n      <block type=\"boolConversion_Python\">\n      </block>\n      <block type=\"intConversion_Python\">\n      </block>\n      <block type=\"floatConversion_Python\">\n      </block>\n      <block type=\"strConversion_Python\">\n      </block>\n    </category>\n    <category name=\"I/O\" colour=\"190\">\n      <block type=\"withAs_Python\">\n      </block>\n      <block type=\"textFromFile_Python\">\n        <value name=\"FILENAME\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">name of file</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"openReadFile_Python\">\n              <value name=\"FILENAME\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">name of file</field>\n          </shadow>\n        </value>\n      </block>\n      <block type=\"openWriteFile_Python\">\n              <value name=\"FILENAME\">\n          <shadow type=\"text\">\n            <field name=\"TEXT\">name of file</field>\n          </shadow>\n        </value>\n      </block>\n    </category>\n    <sep></sep>\n    <category name=\"VARIABLES\" colour=\"%{BKY_VARIABLES_HUE}\" custom=\"VARIABLE\"></category>\n    <category name=\"FUNCTIONS\" colour=\"%{BKY_PROCEDURES_HUE}\" custom=\"PROCEDURE\"></category>\n  </xml>";

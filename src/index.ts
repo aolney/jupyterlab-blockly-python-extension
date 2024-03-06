@@ -1,26 +1,18 @@
 import { ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette, MainAreaWidget, WidgetTracker, IWidgetTracker, ISessionContext } from '@jupyterlab/apputils';
-// import * as apputils from "@jupyterlab/apputils";
 import * as cells from "@jupyterlab/cells";
 import { Widget } from '@lumino/widgets';
 import { CommandRegistry } from "@lumino/commands";
 import { INotebookTracker, NotebookPanel } from "@jupyterlab/notebook";
-// import * as notebook_1 from "@jupyterlab/notebook";
 import { ICellModel, Cell } from "@jupyterlab/cells";
 import { DocumentRegistry } from "@jupyterlab/docregistry";
-
 import { Kernel, KernelMessage, Session } from "@jupyterlab/services"
-
-
+import { toolbox, encodeWorkspace, decodeWorkspace, UpdateAllIntellisense_Python, setNotebooksInstance as notebooks_1 } from './toolbox';
 import * as Blockly from 'blockly/core';
 import * as libraryBlocks from 'blockly/blocks';
 import { pythonGenerator } from 'blockly/python';
 import * as En from 'blockly/msg/en';
 Blockly.setLocale(En);
-
-import { toolbox, encodeWorkspace, decodeWorkspace, UpdateAllIntellisense_Python, setNotebooksInstance as notebooks_1 } from './toolbox';
-
-
 
 class BlocklyWidget extends Widget {
   readonly notebooks: INotebookTracker;
@@ -38,7 +30,6 @@ class BlocklyWidget extends Widget {
     this.notebooks.activeCellChanged.connect(BlocklyWidget__get_onActiveCellChanged(this), this);
     notebooks_1(this.notebooks);
     
-
     this.div = document.createElement("div");
     this.div.id = "blocklyDivPython";
     this.node.appendChild(this.div);
@@ -185,9 +176,6 @@ export function BlocklyWidget__get_onKernelExecuted(this$: BlocklyWidget): ((arg
   };
 };
 
-
-
-
 export function BlocklyWidget__get_onActiveCellChanged(this$: BlocklyWidget): (arg0: INotebookTracker, arg1: Cell<ICellModel> | null) => boolean {
   return (sender: INotebookTracker, args: Cell<ICellModel> | null): boolean => {
     if(args){
@@ -204,8 +192,6 @@ export function BlocklyWidget__get_onActiveCellChanged(this$: BlocklyWidget): (a
         }
       }
       if (isChecked(syncCheckbox) && this$.notebooks.activeCell) {
-        console.log("BlocklyWidget__get_blocksRendered(this$):")
-        console.log(BlocklyWidget__get_blocksRendered(this$))
         if (BlocklyWidget__get_blocksRendered(this$) && BlocklyWidget__ActiveCellSerializedBlocksWorkspaceOption(this$) == null) {
           BlocklyWidget__clearBlocks(this$);
         }
@@ -241,14 +227,12 @@ export function BlocklyWidget__ActiveCellSerializedBlocksWorkspaceOption(this$: 
   return null;
 };
 
-
-
 /**
  * Render blocks to code
  */
 export function BlocklyWidget__RenderCode(this$: BlocklyWidget): void {
   let model: ICellModel;
-  // let model_test: ICodeCellModel;
+  
   const code: string = this$.generator.workspaceToCode(BlocklyWidget__get_workspace(this$));
 
   if(this$.notebooks.activeCell){
@@ -293,7 +277,6 @@ export function BlocklyWidget__RenderBlocks(this$: BlocklyWidget): void {
   }
 };
 
-
 /**
  * Auto-save: Render blocks to code if we are on a code cell, we've previously saved to it, and have any blocks on the workspace
  */
@@ -334,10 +317,13 @@ export function BlocklyWidget__RenderCodeToLastCell(this$: BlocklyWidget): void 
   }
 };
 
-
 export function BlocklyWidget__clearBlocks(this$: BlocklyWidget): void {
   const workspace: Blockly.Workspace = Blockly.getMainWorkspace();
-  workspace.clear();
+  const blocks = workspace.getAllBlocks(false);
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    block.dispose(false);
+  }
 }
 
 /**
@@ -361,8 +347,6 @@ export function attachWidget(app: JupyterFrontEnd, notebooks: INotebookTracker, 
   app.shell.activateById(widget.id);
 };
 
-
-
 /**
  * Return a MainAreaWidget wrapping a BlocklyWidget
  */
@@ -379,30 +363,28 @@ export function createMainAreaWidget<BlocklyWidget>(bw: BlocklyWidget): MainArea
 export function onKernelChanged(this: any, sender: ISessionContext, args: Session.ISessionConnection.IKernelChangedArgs): boolean{
   const widget: BlocklyWidget = this;
   if (BlocklyWidget__get_notHooked(widget)) {
-      const matchValue: Kernel.IKernelConnection | null | undefined = sender.session?.kernel;
-      if (matchValue == null || matchValue == undefined) {
+    const matchValue: Kernel.IKernelConnection | null | undefined = sender.session?.kernel;
+    if (matchValue == null || matchValue == undefined) {}
+    else {
+      const kernel: Kernel.IKernelConnection = matchValue;
+      if (kernel.name.indexOf("python") >= 0) {
+        const ikernel = kernel as Kernel.IKernelConnection;
+        ikernel.iopubMessage.connect(BlocklyWidget__get_onKernelExecuted(widget), widget);
+        console.log("jupyterlab_blockly_extension_python: Listening for kernel messages");
+        BlocklyWidget__set_notHooked_Z1FBCCD16(widget, false);
       }
-      else {
-          const kernel: Kernel.IKernelConnection = matchValue;
-          if (kernel.name.indexOf("python") >= 0) {
-              const ikernel = kernel as Kernel.IKernelConnection;
-              ikernel.iopubMessage.connect(BlocklyWidget__get_onKernelExecuted(widget), widget);
-              console.log("jupyterlab_blockly_extension_python: Listening for kernel messages");
-              BlocklyWidget__set_notHooked_Z1FBCCD16(widget, false);
-          }
-      }
-      return true;
+    }
+    return true;
   }
   else {
-      return false;
+    return false;
   }
 };
 
 export function onNotebookChanged(this: any, sender: IWidgetTracker<NotebookPanel>, args: NotebookPanel | null): boolean{
   const blocklyWidget: BlocklyWidget = this;
   const matchValue: NotebookPanel | null = sender.currentWidget;
-  if (matchValue == null) {
-  }
+  if (matchValue == null) {}
   else {
     const notebook: NotebookPanel = matchValue;
     console.log("jupyterlab_blockly_extension_python: notebook changed to " + notebook.context.path);
@@ -412,12 +394,10 @@ export function onNotebookChanged(this: any, sender: IWidgetTracker<NotebookPane
   return true;
 };
 
-
 export const runCommandOnNotebookChanged = (app: JupyterFrontEnd, sender: IWidgetTracker<NotebookPanel>, args: NotebookPanel | null): boolean => {
   const appContext = app;  
   const matchValue = sender.currentWidget;
-  if (matchValue == null) {
-  }
+  if (matchValue == null) {}
   else {
     console.log("jupyterlab_blockly_extension_python: notebook changed, autorunning blockly python command");
     appContext.commands.execute("blockly_python:open");
@@ -442,7 +422,7 @@ async function activate(app: JupyterFrontEnd, palette: ICommandPalette, notebook
     });
   };
 
-  notebooks.currentChanged.connect(onNotebookChanged, blocklyWidget);  
+  notebooks.currentChanged.connect(onNotebookChanged, blocklyWidget);
 
   app.commands.addCommand("blockly_python:open", {
     label: 'Blockly Python',
@@ -466,7 +446,7 @@ async function activate(app: JupyterFrontEnd, palette: ICommandPalette, notebook
 };
 
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: '@aolney/jupyterlab-blockly-python-extension:plugin',
+  id: 'jupyterlab-apod',
   description: 'blockly extension for jupyter lab.',
   autoStart: true,
   requires: [ICommandPalette, INotebookTracker, ILayoutRestorer],
