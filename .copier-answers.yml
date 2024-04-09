@@ -11,7 +11,7 @@ kind: frontend
 labextension_name: '@aolney/jupyterlab-blockly-python-extension'
 mimetype: ''
 mimetype_name: ''
-project_short_description: A JupyterLab extension.
+project_short_description: A JupyterLab extension that creates a Blockly palette for Python.
 python_name: aolney_jupyterlab_blockly_python_extension
 repository: https://github.com/aolney/jupyterlab-blockly-python-extension
 test: true

@@ -1,7 +1,7 @@
 {
     "name": "@aolney/jupyterlab-blockly-python-extension",
     "version": "0.1.0",
-    "description": "A JupyterLab extension.",
+    "description": "A JupyterLab extension that creates a Blockly palette for Python.",
     "keywords": [
         "jupyter",
         "jupyterlab",
@@ -11,7 +11,7 @@
     "bugs": {
         "url": "https://github.com/aolney/jupyterlab-blockly-python-extension/issues"
     },
-    "license": "BSD-3-Clause",
+    "license": "Apache-2.0",
     "author": {
         "name": "Andrew M. Olney",
         "email": "aolney@memphis.edu"
