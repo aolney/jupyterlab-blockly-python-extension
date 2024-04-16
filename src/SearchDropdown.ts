@@ -48,8 +48,21 @@ export class CustomFieldFilter extends Blockly.FieldTextInput {
     if (div && !div.firstChild) {
       return;
     }
+
+    // for unknown reasons, sometimes getDiv fails in the chain of super calls
+    // so checking div before doing the super calls appears to be a sanity check
+    // if (div) {
+    //   super.showEditor_();
+    // }
+    
+
+
     var editor = this.dropdownCreate_();
     Blockly.DropDownDiv.getContentDiv().appendChild(editor);
+
+    // Unclear how to reference source block in new typescript approach
+    // Blockly.DropDownDiv.setColour(this.sourceBlock_.style.colourPrimary,this.sourceBlock_.style.colourTertiary);
+    Blockly.DropDownDiv.setColour("#5C68A6","#5C68A6"); //HSV number should be allowed
 
     Blockly.DropDownDiv.showPositionedByField(
       this,
@@ -95,7 +108,7 @@ export class CustomFieldFilter extends Blockly.FieldTextInput {
     this.imageElement_.style.cssText =
       'border: 1px solid #ccc;height: ' +
       height +
-      'px;width: 150px;font-size: 12px;padding: 0px';
+      'px;width: 150px;font-size: 12px;padding: 0px;font: normal 12pt sans-serif'; //font-family: sans-serif';
     this.imageElement_.innerHTML = this.WORDS.join('<br>');
     return this.imageElement_;
   }
