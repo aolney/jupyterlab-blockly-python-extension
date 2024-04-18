@@ -564,8 +564,10 @@ export function RequestIntellisenseVariable_Python(block: Blockly.Block, parentN
       }).then(function() {
         const intellisenseUpdateEvent = new Blockly.Events.BlockChange(block, "field", "VAR", 0, 1);
         intellisenseUpdateEvent.group = "INTELLISENSE";
-        console.log("event status is " + Blockly.Events.disable);
-        Blockly.Events.enable;
+        // @ts-ignore
+        console.log("event status is " + Blockly.Events.disabled_); //disabled_ existed in old version but not new version?
+        // @ts-ignore
+        Blockly.Events.disabled_ = 0;
         Blockly.Events.fire(intellisenseUpdateEvent);
       }).catch((error: Error) => {
         console.log("Intellisense event failed to fire; " + error.message);

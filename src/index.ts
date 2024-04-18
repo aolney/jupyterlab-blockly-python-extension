@@ -406,7 +406,7 @@ export const runCommandOnNotebookChanged = (app: JupyterFrontEnd, sender: IWidge
 };
 
 async function activate(app: JupyterFrontEnd, palette: ICommandPalette, notebooks: INotebookTracker, restorer: ILayoutRestorer | null, panel: NotebookPanel) {
-  console.log('blockly extension is activated!');
+  console.log('jupyterlab_blockly_extension_python: extension is activated!');
 
   const blocklyWidget: BlocklyWidget = BlocklyWidget_$ctor_A44FDC6(notebooks);
   let widget: MainAreaWidget<any> = createMainAreaWidget(blocklyWidget);

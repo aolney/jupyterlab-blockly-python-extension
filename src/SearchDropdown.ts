@@ -14,7 +14,7 @@
  
 
 // AO: dependencies and exports for webpack
-import Blockly from 'blockly';
+import Blockly from 'blockly'; // { Block }
 
 export var CustomFields: any = CustomFields || {};
 
@@ -41,29 +41,49 @@ export class CustomFieldFilter extends Blockly.FieldTextInput {
     return new CustomFieldFilter("", options['fieldFilter'], null);
   }
 
-  showEditor_() {
-    super.showEditor_();
+  showEditor_(e?: Event) {
+    // running two extensions at once can create a kind of race condition where one checks the dom to see if set up is needed 
+    // and then aborts because elements are already in the dom. This causes incomplete initialization.
+    // To solve for this we set the workspace, delete the dom elements in question, and then recreate them.
+
+    // set the workspace
+    const block = this.getSourceBlock();
+    if (block) {
+        var workspace = block.workspace as Blockly.WorkspaceSvg;
+        Blockly.common.setMainWorkspace(workspace);
+    }
+
+    //if DOM elements are not properly wired to blockly, destroy them and recreate them
+    if( Blockly.WidgetDiv.getDiv() == null ) {
+      var bwd = document.querySelector('.blocklyWidgetDiv');
+      if(bwd){
+        bwd.remove();
+      }
+      Blockly.WidgetDiv.createDom();
+    }
+    if( Blockly.DropDownDiv.getContentDiv() == null ) {
+      var bddd = document.querySelector('.blocklyDropDownDiv');
+      if(bddd){
+        bddd.remove();
+      } 
+      Blockly.DropDownDiv.createDom();
+    }
+  
+    super.showEditor_(e);
 
     var div = Blockly.WidgetDiv.getDiv();
     if (div && !div.firstChild) {
       return;
     }
 
-    // for unknown reasons, sometimes getDiv fails in the chain of super calls
-    // so checking div before doing the super calls appears to be a sanity check
-    // if (div) {
-    //   super.showEditor_();
-    // }
-    
-
-
     var editor = this.dropdownCreate_();
     Blockly.DropDownDiv.getContentDiv().appendChild(editor);
-
-    // Unclear how to reference source block in new typescript approach
-    // Blockly.DropDownDiv.setColour(this.sourceBlock_.style.colourPrimary,this.sourceBlock_.style.colourTertiary);
-    Blockly.DropDownDiv.setColour("#5C68A6","#5C68A6"); //HSV number should be allowed
-
+  
+    if(block) {
+      var blockColor = block.getColour()
+      Blockly.DropDownDiv.setColour(blockColor,blockColor) //"#5C68A6","#5C68A6");
+    }
+    
     Blockly.DropDownDiv.showPositionedByField(
       this,
       this.dropdownDispose_.bind(this)
