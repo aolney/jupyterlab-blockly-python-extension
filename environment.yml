@@ -1,0 +1,17 @@
+name: dw-ext-jl4
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10.13
+  - jupyterlab
+  - nodejs=18
+  - copier=7
+  - jinja2-time
+  - ca-certificates
+  - certifi
+  - openssl
+  - pandas
+  - scikit-learn
+

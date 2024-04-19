@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.2.5
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: aolney@memphis.edu
+author_name: Andrew M. Olney
+data_format: string
+file_extension: ''
+has_binder: true
+has_settings: false
+kind: frontend
+labextension_name: '@aolney/jupyterlab-blockly-python-extension'
+mimetype: ''
+mimetype_name: ''
+project_short_description: A JupyterLab extension that creates a Blockly palette for Python.
+python_name: aolney_jupyterlab_blockly_python_extension
+repository: https://github.com/aolney/jupyterlab-blockly-python-extension
+test: true
+viewer_name: ''
+
