@@ -14,4 +14,7 @@ dependencies:
   - openssl
   - pandas
   - scikit-learn
+  - build
+  - twine
+  - hatch
 
