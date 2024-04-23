@@ -10,12 +10,15 @@ channels:
   - conda-forge
 
 dependencies:
-  # runtime dependencies
-  - python >=3.10,<3.11.0a0
+  - python=3.10.13
   - jupyterlab >=4.0.0,<5
-  # labextension build dependencies
-  - nodejs >=18,<19
+  - nodejs=18
+  - copier=7
+  - jinja2-time
+  - ca-certificates
+  - certifi
+  - openssl
+  - pandas
+  - scikit-learn
   - pip
   - wheel
-  # additional packages for demos
-  # - ipywidgets
