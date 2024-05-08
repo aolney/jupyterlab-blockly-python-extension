@@ -1,6 +1,6 @@
 {
     "name": "@aolney/jupyterlab-blockly-python-extension",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "A JupyterLab extension that creates a Blockly palette for Python.",
     "keywords": [
         "jupyter",

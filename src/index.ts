@@ -12,6 +12,8 @@ import * as Blockly from 'blockly/core';
 import * as libraryBlocks from 'blockly/blocks';
 import { pythonGenerator } from 'blockly/python';
 import * as En from 'blockly/msg/en';
+import * as Logging from './logging'
+
 Blockly.setLocale(En);
 
 class BlocklyWidget extends Widget {
@@ -94,6 +96,7 @@ class BlocklyWidget extends Widget {
           BlocklyWidget__set_blocksRendered_Z1FBCCD16(this$, true);
       }
       //LogToServer(BlocklyLogEntry082720_Create<Blockly.Events.BlockBase>(e.type, e));
+      Logging.LogToServer(Logging.createBlocklyLogEntry(e.type, e.toJson()));
     }
     BlocklyWidget__get_workspace(this$).removeChangeListener(logListener);
     BlocklyWidget__get_workspace(this$).addChangeListener(logListener);
@@ -162,11 +165,14 @@ export function BlocklyWidget__get_onKernelExecuted(this$: BlocklyWidget): ((arg
         case "execute_input": {
           console.log("jupyterlab_blockly_extension_python: kernel executed code, updating intellisense");
           // LogToServer(JupyterLogEntry082720_Create("execute-code", args.content.code));
+          //TODO: make sure code is getting logged here
+          Logging.LogToServer(Logging.createJupyterLogEntry("execute-code", args.content ));
           UpdateAllIntellisense_Python();
           break;
         }
         case "error": {
           // LogToServer(JupyterLogEntry082720_Create("execute-code-error", JSON.stringify(args.content)));
+          Logging.LogToServer(Logging.createJupyterLogEntry("execute-code-error", args.content ));
           break;
         }
         default: 0;
@@ -180,6 +186,7 @@ export function BlocklyWidget__get_onActiveCellChanged(this$: BlocklyWidget): (a
   return (sender: INotebookTracker, args: Cell<ICellModel> | null): boolean => {
     if(args){
       // LogToServer(JupyterLogEntry082720_Create("active-cell-change", args.node.outerText));
+      Logging.LogToServer(Logging.createJupyterLogEntry("active-cell-change", { cell_text : args.node.outerText} ));
       const syncCheckbox: HTMLElement | null = document.getElementById("syncCheckboxPython");
       const autosaveCheckbox: HTMLElement | null = document.getElementById("autosaveCheckboxPython");
 
@@ -243,6 +250,8 @@ export function BlocklyWidget__RenderCode(this$: BlocklyWidget): void {
       this$.notebooks.activeCell.model.sharedModel.setSource(code + "\n#" + encodeWorkspace());
       console.log(("jupyterlab_blockly_extension_python: wrote to active cell\n" + code) + "\n");
       // LogToServer(JupyterLogEntry082720_Create("blocks-to-code", this$.notebooks.activeCell.model.value.text));
+      // TODO check this is logging correctly
+      Logging.LogToServer(Logging.createJupyterLogEntry("blocks-to-code", { code: this$.notebooks.activeCell.model.toJSON().source.toString() } ));
       BlocklyWidget__set_blocksRendered_Z1FBCCD16(this$, true);
     }
   }
@@ -266,6 +275,7 @@ export function BlocklyWidget__RenderBlocks(this$: BlocklyWidget): void {
         BlocklyWidget__clearBlocks(this$);
         decodeWorkspace(xmlString);
         // LogToServer(JupyterLogEntry082720_Create("xml-to-blocks", xmlString));
+        Logging.LogToServer(Logging.createJupyterLogEntry("xml-to-blocks", { xml: xmlString }));
       }
     } catch (e: any) {
       window.alert("Unable to perform \'Code to Blocks\': XML is either invald or renames existing variables. Specific error message is: " + e.message);
@@ -307,6 +317,10 @@ export function BlocklyWidget__RenderCodeToLastCell(this$: BlocklyWidget): void 
             BlocklyWidget__get_lastCell(this$).model.sharedModel.setSource(code + "\n#" + encodeWorkspace());
             console.log(("jupyterlab_blockly_extension_python: wrote to active cell\n" + code) + "\n");
             // LogToServer(JupyterLogEntry082720_Create("blocks-to-code-autosave", this$.notebooks.activeCell.model.value.text));
+            if(this$.notebooks.activeCell) {
+              // TODO check if logging correctly
+              Logging.LogToServer(Logging.createJupyterLogEntry("blocks-to-code-autosave", this$.notebooks.activeCell.model.toJSON() ));
+            }
           }
         }
       }
@@ -389,13 +403,14 @@ export function onNotebookChanged(this: any, sender: IWidgetTracker<NotebookPane
     const notebook: NotebookPanel = matchValue;
     console.log("jupyterlab_blockly_extension_python: notebook changed to " + notebook.context.path);
     // LogToServer(JupyterLogEntry082720_Create("notebook-changed", notebook.context.path));
+    Logging.LogToServer(Logging.createJupyterLogEntry("notebook-changed", { path: notebook.context.path }));
     notebook.sessionContext.kernelChanged.connect(onKernelChanged, blocklyWidget);
   }
   return true;
 };
 
-export const runCommandOnNotebookChanged = (app: JupyterFrontEnd, sender: IWidgetTracker<NotebookPanel>, args: NotebookPanel | null): boolean => {
-  const appContext = app;  
+export function runCommandOnNotebookChanged (this: any, sender: IWidgetTracker<NotebookPanel>, args: NotebookPanel | null): boolean  {
+  const appContext = this;  
   const matchValue = sender.currentWidget;
   if (matchValue == null) {}
   else {
@@ -442,12 +457,33 @@ async function activate(app: JupyterFrontEnd, palette: ICommandPalette, notebook
     category: "Blockly",
   });
 
+  // process query string parameters
+  const searchParams: any = new URLSearchParams(window.location.search);
+  if( searchParams.get("bl") === "py") {
+    console.log("jupyterlab_blockly_extension_python: openning blockly, bl=py");
+    app.restored.then<void>((): void => {
+      notebooks.currentChanged.connect(runCommandOnNotebookChanged, app);
+      widget.title.closable = false;
+    });
+  }
+
+  let id = searchParams.get("id")
+  if( id ) {
+    Logging.set_id( id );
+    console.log( "jupyterlab_blockly_extension_py: using id=" + id + " for logging" ) ;
+  }
+
+  let log_url = searchParams.get("log") 
+  if( log_url ) {
+    Logging.set_log_url( log_url );
+    console.log( "jupyterlab_blockly_extension_py: using log=" + log_url + " for logging" ) ;
+  }
 
 };
 
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab-apod',
-  description: 'blockly extension for jupyter lab.',
+  description: 'blockly python extension for jupyter lab.',
   autoStart: true,
   requires: [ICommandPalette, INotebookTracker, ILayoutRestorer],
   activate: activate

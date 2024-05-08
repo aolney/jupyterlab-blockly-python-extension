@@ -12,6 +12,10 @@ The following query string parameters enable functionality:
 - id=xxx adds an identifier for logging
 
 
+> [!WARNING]  
+> Currently there appears to be a conflict between the Python and R extensions, so we recommend that only one be installed at a time.
+> Additionally the current version of nbgitpuller is removing the query strings above before they can be processed.
+
 ## Requirements
 
 - JupyterLab >= 4.0.0
