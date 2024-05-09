@@ -17,9 +17,6 @@ export interface LogEntry {
   }
   
   export function createBlocklyLogEntry(name: string, object: any): BlocklyLogEntry050824 {
-    // let encoded_object = btoa(object);
-    // // DEBUG
-    // encoded_object = (object);
     return {
       schema: "ble050824",
       name: name,
@@ -28,11 +25,6 @@ export interface LogEntry {
   }
   
   export function createJupyterLogEntry(name: string, payload: object): JupyterLogEntry050824 {
-    // let encoded_payload = "";
-    // if( payload ) { 
-    //   // DEBUG
-    //   encoded_payload = payload; //btoa(payload); 
-    // }
     return {
       schema: "jle050824",
       name: name,
@@ -69,8 +61,8 @@ export interface LogEntry {
         },
         body: JSON.stringify({
           username:id,
-          //TODO btoa(json)
-          json:filterJson(logObject) 
+          //base64 encode the payload because it can have all kinds of craziness inside it
+          json:btoa(filterJson(logObject))
           
         })
       }).then(response => {

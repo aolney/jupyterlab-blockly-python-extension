@@ -512,74 +512,129 @@ export function addToDict(dict: any, k: any, v: any) {
   dict.set(k, v);
 }
 
+
+/**
+ * Fire intellisense event that causes Blockly to refresh intellisense-driven options
+ * Typically called by RequestIntellisenseVariable 
+ * @param block 
+ */
+export function fireIntellisenseEvent(block: Blockly.Block) {
+  try {
+  // Create event on this block
+  const intellisenseUpdateEvent = new Blockly.Events.BlockChange(block, "field", "VAR", 0, 1);
+  // Set the event group; this allows event listners to focus on only relevant messages
+  intellisenseUpdateEvent.group = "INTELLISENSE";
+  // Do some state tracking; this helps with debugging events
+  // @ts-ignore
+  console.log("event status is " + Blockly.Events.disabled_); //disabled_ existed in old version but not new version?
+  // @ts-ignore
+  Blockly.Events.disabled_ = 0;
+  Blockly.Events.fire(intellisenseUpdateEvent);
+  } 
+  catch(e){
+    if (e instanceof Error) {
+      console.log("Intellisense event failed to fire; " + e.message);
+    }
+  }
+}
+
+/**
+ * Wrap a promise inside another with a timeout in milliseconds
+ * https://github.com/JakeChampion/fetch/issues/175#issuecomment-216791333
+ * @param ms 
+ * @param promise 
+ * @returns 
+ */
+export function timeoutPromise<T>(ms: number, promise: Promise<T>) {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error("promise timeout"))
+    }, ms);
+    promise.then(
+      (res) => {
+        clearTimeout(timeoutId);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      }
+    );
+  })
+}
+
 /**
  * Request an IntellisenseVariable. If the type does not descend from object, the children will be empty.
  * Sometimes we will create a variable but it will have no type until we make an assignment.
  * We might also create a variable and then change its type.
  * So we need to check for introspections/completions repeatedly (no caching right now).
  */
-
-
 export function RequestIntellisenseVariable_Python(block: Blockly.Block, parentName: string): void {
   GetKernalInspection(parentName).then((parentInspection: string) => {
     const parent: IntellisenseEntry = new IntellisenseEntry(parentName, parentInspection, isFunction_Python(parentInspection), isClass_Python(parentInspection));
-    let shouldGetChildren: boolean;
-    let outArg: IntellisenseVariable = new IntellisenseVariable(parent, []);
-    
-    const matchValue: [boolean, IntellisenseVariable] = [
-      intellisenseLookup.has(parent.Name),
-      outArg
-    ];
-    if (matchValue[0]) {
-      const cached: IntellisenseVariable = matchValue[1];
-      if (cached.VariableEntry.Info !== parent.Info || cached.ChildEntries.length === 0) {
+    // Assume we need to get children
+    let shouldGetChildren: boolean = true;
+    // Check the cache to see if we have found children before
+    let cached: IntellisenseVariable | undefined = intellisenseLookup.get(parent.Name);
+    if( cached ) {
+      // Even if we have a cached variable, update it if the parent Info does not match or if child entries is short
+      if (cached.VariableEntry.Info !== parent.Info || cached.ChildEntries.length <= 1) {
         shouldGetChildren = true;
+      // Only avoid getting children if the cached variable looks good
       } else {
         shouldGetChildren = false;
       }
-    } else {
-      shouldGetChildren = true;
     }
   
-
-    if (shouldGetChildren) {
-      GetKernelCompletion(parentName + ".").then((completions: string[]) => {
-        const safeCompletions: string[] = completions.filter((s: string) => {
-          if (parent.Info.indexOf("Signature: DataFrame") === 0) {
-            return !(s.indexOf("_") === 0) && !(s.indexOf("style") === 0);
+    if (!shouldGetChildren) {
+      console.log("Not refreshing intellisense for " + parent.Name);
+      // Trigger update intellisense even if we are cached (this could be reconsidered, but original code does this)
+      fireIntellisenseEvent(block);
+    } else {
+      // Get children by prefixing on parent's name (package completions)
+      GetKernelCompletion(parentName + ".").then((childCompletions: string[]) => {
+        // Filter out bad completions (Python specific)
+        let safeCompletions: string[] = childCompletions.filter((s: string) => {
+          if (parent.Info.startsWith("Signature: DataFrame") ) {
+            return !(s.startsWith("_") ) && !(s.startsWith("style"));
           }
           return true;
         });
-        const pr: Promise<string>[] = safeCompletions.map((completion: string) => GetKernalInspection(parentName + "." + completion));
-        return Promise.all(pr).then((inspections: string[]) => {
-          const intellisenseVariable: IntellisenseVariable = new IntellisenseVariable(parent, safeCompletions.map((completion: string, index: number) => {
-            return new IntellisenseEntry(completion, inspections[index], isFunction_Python(inspections[index]), isClass_Python(inspections[index]));
-          }));
-          if (intellisenseLookup.has(parentName)) {
-            intellisenseLookup.set(parentName, intellisenseVariable);
-          } else {
-            addToDict(intellisenseLookup, parentName, intellisenseVariable);
-          }
+        // Set up inspections for filtered children; use a timeout promise so we don't wait forever; make timeout dynamic based on which child this is (assumes serial bottleneck at kernel)
+        // const pr: Promise<string>[] = safeCompletions.map((childCompletion: string, index: number) => timeoutPromise<string>( 100 * (index+1) , GetKernalInspection(childCompletion)) );
+        // For Python we don't currently seem to have a problem with promises not returning
+        const pr: Promise<string>[] = safeCompletions.map((childCompletion: string, index: number) =>  GetKernalInspection(parentName + "." + childCompletion));
+        // Synchronize on inspections to yield the final result
+        Promise.allSettled(pr).then((results : PromiseSettledResult<string>[]) => {
+          // Create an intellisense entries for children, sorted alphabetically
+          let children: IntellisenseEntry[] = safeCompletions.map((childCompletion: string, index: number) => {
+            let info = "";
+            let isFunction = true;
+            let isClass = false;
+            if( results[index].status === "fulfilled") {
+              info = (results[index] as PromiseFulfilledResult<string>).value;
+              isFunction = isFunction_Python(info);
+              isClass = isClass_Python(info);
+            } 
+            return new IntellisenseEntry(childCompletion, info, isFunction, isClass)}).sort((a, b) => (a.Name < b.Name ? -1 : 1));
+          // Package up IntellisenseVariable (parent + children)
+          let intellisenseVariable: IntellisenseVariable = new IntellisenseVariable(parent, children);
+          // Add to cache
+          intellisenseLookup.set(parentName, intellisenseVariable);
+
+          // Fire event; this causes Blockly to refresh
+          fireIntellisenseEvent(block);
+        }).catch(error => {
+          console.log("Intellisense error getting inspections for children of " + parentName, error);
         });
-      }).then(function() {
-        const intellisenseUpdateEvent = new Blockly.Events.BlockChange(block, "field", "VAR", 0, 1);
-        intellisenseUpdateEvent.group = "INTELLISENSE";
-        // @ts-ignore
-        console.log("event status is " + Blockly.Events.disabled_); //disabled_ existed in old version but not new version?
-        // @ts-ignore
-        Blockly.Events.disabled_ = 0;
-        Blockly.Events.fire(intellisenseUpdateEvent);
-      }).catch((error: Error) => {
-        console.log("Intellisense event failed to fire; " + error.message);
+      }).catch(error => {
+        console.log("Intellisense error getting child completions of " + parentName, error);
       });
-    } else {
-      console.log("Not refreshing intellisense for " + parent.Name);
     }
-  }).catch((error: Error) => {
-    console.log("Intellisense event failed to fire; " + error.message);
+  }).catch((error) => {
+    console.log("Intellisense error getting inspection of intellisense variable candidate (parent) " + parentName, error);
   });
 }
-
 
 
 export function requestAndStubOptions_Python(block: Blockly.Block, varName: string): string[][] {
