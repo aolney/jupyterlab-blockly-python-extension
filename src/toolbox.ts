@@ -494,7 +494,7 @@ export const intellisenseLookup: Map<string, IntellisenseVariable> = new Map<str
  * Determine if an entry is a function. We have separate blocks for properties and functions because only function blocks need parameters
  */
 export function isFunction_Python(info: string): boolean {
-  return info.includes("Signature:") && info.includes("function");
+  return (info.includes("Signature:") && info.includes("function") ) || (info.includes("Signature:") && info.includes("method"));
 }
 
 /**
@@ -773,7 +773,16 @@ export function makeMemberIntellisenseBlock_Python(blockName: string, prepositio
       const flatOptions: string[] = optionsFunction(varUserName).map(arr => arr[0]);
 
       const dataString: string = thisBlockClosure.data ? thisBlockClosure.data : "";
-      const defaultSelection: string = dataString.indexOf(":") >= 0 ? dataString.split(":")[1] : "";
+      // const defaultSelection: string = dataString.indexOf(":") >= 0 ? dataString.split(":")[1] : "";
+      let defaultSelection: string = "";
+      //we have options but no selection; saving the default choice in `data` is critical for proper blocks to code behavior when no selection has been made
+      if( dataString.endsWith(":") && flatOptions.length > 0 ){
+        defaultSelection = flatOptions[0];
+        thisBlockClosure.data = varUserName + ":" + defaultSelection;
+      // we have some kind of selected option; use it
+      } else if ( dataString.indexOf(":") >= 0 ) {
+        defaultSelection = dataString.split(":")[1]
+      }
       
       if(input){
         let customfield = new CustomFields.FieldFilter(defaultSelection, flatOptions, function(this: any, newMemberSelectionIndex: any) {
@@ -824,10 +833,9 @@ export function makeMemberIntellisenseBlock_Python(blockName: string, prepositio
     },
     onchange: function(e: Blockly.Events.BlockChange): void {
       if ((this.workspace && !this.isInFlyout) && (e.group === "INTELLISENSE")) {
-
-        const data_1: string[] = this.data ? this.data.toString().split(":") : "";
         
         this.updateIntellisense(this, null, ((varName_2: string): string[][] => getIntellisenseMemberOptions_Python(memberSelectionFunction, varName_2)));
+        const data_1: string[] = this.data ? this.data.toString().split(":") : "";
         const memberField: Blockly.Field = this.getField("MEMBER");
         if (data_1[1] !== "") {
           memberField.setValue(data_1[1]);
