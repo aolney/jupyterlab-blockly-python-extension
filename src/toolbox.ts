@@ -461,7 +461,7 @@ export function GetKernalInspection(queryString: string): Promise<string> {
         detail_level: 0,
       }).then((_arg: KernelMessage.IInspectReplyMsg) => {
         const content = _arg.content;
-        if ("found" in content) {
+        if ("found" in content && content.found) {
           const mimeType: string | undefined = widget.content.rendermime.preferredMimeType(content.data);
           const payload = content.data;
           const model: MimeModel = new rendermime.MimeModel({

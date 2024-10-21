@@ -17,4 +17,5 @@ dependencies:
   - build
   - twine
   - hatch
-
+  - yarn=3
+  - jedi==0.18.1

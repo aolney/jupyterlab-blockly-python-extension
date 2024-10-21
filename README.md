@@ -13,7 +13,8 @@ The following query string parameters enable functionality:
 
 
 > [!WARNING]  
-> Currently there appears to be a conflict between the Python and R extensions, so we recommend that only one be installed at a time.
+> 1. Currently there appears to be a conflict between the Python and R extensions, so we recommend that only one be installed at a time.
+> 2. See `environment.yml` for required versions of other packages
 
 ## Requirements
 

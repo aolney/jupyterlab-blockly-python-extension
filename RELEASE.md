@@ -44,7 +44,7 @@ python -m build
 Then to upload the package to PyPI, do:
 
 ```bash
-twine upload dist/*
+twine upload --skip-existing dist/*
 ```
 
 ### NPM package
