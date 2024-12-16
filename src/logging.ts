@@ -62,7 +62,7 @@ export interface LogEntry {
         body: JSON.stringify({
           username:id,
           //base64 encode the payload because it can have all kinds of craziness inside it
-          json:btoa(filterJson(logObject))
+          json:btoa(JSON.stringify(filterJson(logObject)))
           
         })
       }).then(response => {
