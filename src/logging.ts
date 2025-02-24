@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { SHA256, enc } from 'crypto-js';
 
 export interface LogEntry {
     username: string;
@@ -24,9 +24,7 @@ export interface LogEntry {
  * @returns string
  */
 export function createSHA256Hash(inputString: string) : string {
-    const hash = crypto.createHash('sha256');
-    hash.update(inputString);
-    return hash.digest('hex');
+    return SHA256(inputString).toString(enc.Hex);
 }
   
   export function createBlocklyLogEntry(name: string, object: any): BlocklyLogEntry050824 {
