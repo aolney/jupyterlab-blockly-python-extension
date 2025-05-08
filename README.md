@@ -1,5 +1,8 @@
 # aolney_jupyterlab_blockly_python_extension
 
+> [!CAUTION]
+> This repo is deprecated; please see the [Polyglot repo](https://github.com/aolney/jupyterlab-blockly-polyglot-extension)
+
 [![Github Actions Status](https://github.com/aolney/jupyterlab-blockly-python-extension/workflows/Build/badge.svg)](https://github.com/aolney/jupyterlab-blockly-python-extension/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/aolney/jupyterlab-blockly-python-extension/main?urlpath=lab)
 A JupyterLab extension implementing a Blockly palette for the `Python` language.
 For data science training materials using this extension, see [here](https://github.com/memphis-iis/datawhys-content-notebooks-python).
